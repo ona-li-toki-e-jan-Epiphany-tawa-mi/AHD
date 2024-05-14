@@ -45,9 +45,9 @@ FIO∆STDIN←0
 
 ARGS∆HELP←⊃"""
 Usages:
-  ahd [FILE...]
-  ./ahd.apl [FILE...]
-  apl --script ahd.apl -- [FILE...]
+  ahd [options...] [FILE...]
+  ./ahd.apl [options...] [FILE...]
+  apl --script ahd.apl -- [options...] [FILE...]
 
 Displays FILE contents (or input from stdin if no FILEs were specified) in
 hexidecimal.
