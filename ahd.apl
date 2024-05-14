@@ -43,13 +43,51 @@ FIO∆STDIN←0
 
 
 
-⍝ Filenames given via the command line.
+ARGS∆HELP←"""
+Usage: ahd [FILE...]
+
+Displays FILE contents (or input from stdin if no FILEs were specified) in
+hexidecimal.
+
+Options:
+ +h, ++help    display this help information.
+ +v, ++version display version.
+"""
+ARGS∆VERSION←"ahd 0.1.0"
+
+⍝ A vector of filenames given via the command line.
 ARGS∆FILENAMES←⍬
+⍝ If 1, the program should abort, else 0. This would either be due to an error
+⍝ or a command line argument that serves some other purpose.
+ARGS∆ABORT←0
+⍝ Whether "++" was encountered, meaning all following option-like arguments are
+⍝ to be treated as files.
+ARGS∆END_OF_OPTIONS←0
 
 ⍝ Parses a single command line ARGUMENT and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARG ARGUMENT
-  ⍝ For now, everything is a file name.
-  ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
+  ⍝ If "++" was encountered, we just treat everything as a file.
+  →ARGS∆END_OF_OPTIONS ⍴ LFILE
+
+  →({ARGUMENT≡⍵}¨ "+h" "++help" "+v" "++version" "++") / LHELP LHELP LVERSION LVERSION LDOUBLE_PLUS
+    →(('+'≡↑ARGUMENT)∨"++"≡2↑ARGUMENT) ⍴ LINVALID_OPTION
+    ⍝ Anything leftover is a file.
+    LFILE: ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
+    →LSWITCH_END
+  LINVALID_OPTION:
+    ⍞←"Unknown option '",ARGUMENT,"'\n"
+    ⍞←"Try 'ahd ++help' for more information.\n"
+    ARGS∆ABORT←1 ◊ →LSWITCH_END
+  LHELP:
+    ⍞←⊃ARGS∆HELP
+    ARGS∆ABORT←1 ◊ →LSWITCH_END
+  LVERSION:
+    ⍞←ARGS∆VERSION
+    ARGS∆ABORT←1 ◊ →LSWITCH_END
+  LDOUBLE_PLUS:
+    ARGS∆END_OF_OPTIONS←1
+    →LSWITCH_END
+  LSWITCH_END:
 ∇
 
 ⍝ Parses the command line ARGUMENTS and updates ARGS∆* accordingly.
@@ -114,6 +152,7 @@ HEXIFY_NUMBER←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
 ∇MAIN
   ARGS∆PARSE_ARGS ⎕ARG
+  →ARGS∆ABORT ⍴ LABORT
 
   →(0≡≢ARGS∆FILENAMES) ⍴ LREAD_STDIN
     ⍝ If we have more than one file, we print out the file name to identify each
@@ -123,6 +162,8 @@ HEXIFY_NUMBER←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
   LREAD_STDIN:
     HEXDUMP FIO∆READ_ENTIRE_STDIN
   LDONT_READ_STDIN:
+
+LABORT:
 ∇
 MAIN
 
