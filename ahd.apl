@@ -43,8 +43,11 @@ FIO∆STDIN←0
 
 
 
-ARGS∆HELP←"""
-Usage: ahd [FILE...]
+ARGS∆HELP←⊃"""
+Usages:
+  ahd [FILE...]
+  ./ahd.apl [FILE...]
+  apl --script ahd.apl -- [FILE...]
 
 Displays FILE contents (or input from stdin if no FILEs were specified) in
 hexidecimal.
@@ -79,7 +82,7 @@ ARGS∆END_OF_OPTIONS←0
     ⍞←"Try 'ahd ++help' for more information.\n"
     ARGS∆ABORT←1 ◊ →LSWITCH_END
   LHELP:
-    ⍞←⊃ARGS∆HELP
+    ⍞←ARGS∆HELP
     ARGS∆ABORT←1 ◊ →LSWITCH_END
   LVERSION:
     ⍞←ARGS∆VERSION
