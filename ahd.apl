@@ -67,18 +67,39 @@ ARGS∆FILENAMES←⍬
 
 
 
+⍝ The number of digits used to print the line's byte number (the value on the
+⍝ left with the colon after it.)
+BYTE_NUMBER_DIGITS←7
+⍝ The number of hexidecimal digits to print per line.
+HEX_DIGITS_PER_LINE←16
+⍝ The number of hexidecimal digits to group together without spaces.
+HEX_DIGITS_PER_BLOCK←4
+
 ⍝ Splits a vector ⍵ into partitions of size ⍺. If there is not enough elements
-⍝ left for a full partition, the remaining elements will simply  be placed in
-⍝ the last partition.
+⍝ left for a full partition, the remaining elements will simply be placed in the
+⍝ last partition.
 SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
 
 ⍝ Converts a byte vector ⍵ into an uppercase-hexidecimal character vector.
 HEXIFY_BYTES←{5 ⎕CR ⍵}
+⍝ Converts a number ⍵ into a uppercase-hexidecimal character vector with ⍺
+⍝ hexidecimal digits.
+HEXIFY_NUMBER←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
+
+⍝ Prints out one line of the hexdump output. BYTE_NUMBER is the number of the
+⍝ byte that starts the line, and is also the return value. HEX_DIGITS is a
+⍝ character vector of hexidecimal digits for the line's hexdump.
+∇BYTE_NUMBER←BYTE_NUMBER HEXDUMP_LINE HEX_DIGITS
+  ⍞←BYTE_NUMBER_DIGITS HEXIFY_NUMBER BYTE_NUMBER
+  ⍞←":"
+  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION HEX_DIGITS
+  ⍞←"\n"
+∇
 
 ⍝ Prints out a hexdump of BYTE_VECTOR.
-∇HEXDUMP BYTE_VECTOR; LINE_BYTE_NUMBER
-  LINE_BYTE_NUMBER←0
-  ⊣ {⍞←"\n" ⊣ ⍞←⍵ ⊣ ⍞←": " ⊣ LINE_BYTE_NUMBER←16+⍞←LINE_BYTE_NUMBER}¨ 16 SIZED_PARTITION HEXIFY_BYTES BYTE_VECTOR
+∇HEXDUMP BYTE_VECTOR; BYTE_NUMBER
+  BYTE_NUMBER←0
+  ⊣ {BYTE_NUMBER←HEX_DIGITS_PER_LINE+ BYTE_NUMBER HEXDUMP_LINE HEXIFY_BYTES ⍵}¨ HEX_DIGITS_PER_LINE SIZED_PARTITION BYTE_VECTOR
 ∇
 
 ⍝ Prints out a hexdump of the contents of file FILENAME. If PRINT_FILENAME is 1,
@@ -91,12 +112,11 @@ HEXIFY_BYTES←{5 ⎕CR ⍵}
   HEXDUMP FIO∆READ_ENTIRE_FILE FILENAME
 ∇
 
-
 ∇MAIN
   ARGS∆PARSE_ARGS ⎕ARG
 
   →(0≡≢ARGS∆FILENAMES) ⍴ LREAD_STDIN
-    ⍝ If we have more than one file we print out the file name to identify each
+    ⍝ If we have more than one file, we print out the file name to identify each
     ⍝ hexdump.
     (1≢≢ARGS∆FILENAMES) HEXDUMP_FILE¨ ARGS∆FILENAMES
     →LDONT_READ_STDIN
