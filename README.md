@@ -32,3 +32,10 @@ If you would like to install it, you do so with the following make command:
 ```
 make install
 ```
+
+You can also install it with Nix from the NUR
+(https://github.com/nix-community/NUR) with the following attribute:
+
+```nix
+nur.repos.ona-li-toki-e-jan-Epiphany-tawa-mi.ahd
+```
