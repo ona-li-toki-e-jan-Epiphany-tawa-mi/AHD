@@ -18,18 +18,13 @@
 
 
 
-⍝ Reads in the enitrety of the file with name ⍵ as a byte vector.
+⍝ Reads in the enitrety of the file with name ⍵ as a byte vector. Returns ¯2 on
+⍝ failure.
 FIO∆READ_ENTIRE_FILE←{⎕FIO[26] ⍵}
 ⍝ Reads up to 5,000 bytes in from file descriptor ⍵ as a byte vector.
 FIO∆FREAD←{⎕FIO[6] ⍵}
 ⍝ Returns non-zero if EOF was reached for file descriptor ⍵.
 FIO∆FEOF←{⎕FIO[10] ⍵}
-⍝ Returns non-zero if an error occured in file descriptor ⍵.
-FIO∆FERROR←{⎕FIO[11] ⍵}
-⍝ Returns errno of last ⎕FIO call.
-FIO∆ERRNO←{⎕FIO[1] ''}
-⍝ Returns the string describing errno ⍵.
-FIO∆STRERROR←{⎕FIO[2] ⍵}
 
 ⍝ The file descriptor for stdin.
 FIO∆STDIN←0
@@ -73,7 +68,7 @@ BYTE_NUMBER_DIGITS←7
 ⍝ The number of hexidecimal digits to print per line.
 HEX_DIGITS_PER_LINE←16
 ⍝ The number of hexidecimal digits to group together without spaces.
-HEX_DIGITS_PER_BLOCK←4
+HEX_DIGITS_PER_BLOCK←2
 
 ⍝ Splits a vector ⍵ into partitions of size ⍺. If there is not enough elements
 ⍝ left for a full partition, the remaining elements will simply be placed in the
@@ -104,12 +99,17 @@ HEXIFY_NUMBER←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
 ⍝ Prints out a hexdump of the contents of file FILENAME. If PRINT_FILENAME is 1,
 ⍝ the name of the file will be printed beforehand, else it won't if 0.
-∇PRINT_FILENAME HEXDUMP_FILE FILENAME
+∇PRINT_FILENAME HEXDUMP_FILE FILENAME; BYTE_VECTOR
   →(~PRINT_FILENAME) ⍴ LDONT_PRINT_FILENAME
     ⎕←FILENAME,":"
   LDONT_PRINT_FILENAME:
 
-  HEXDUMP FIO∆READ_ENTIRE_FILE FILENAME
+  BYTE_VECTOR←FIO∆READ_ENTIRE_FILE FILENAME
+  →(¯2≡BYTE_VECTOR) ⍴ LREAD_ERROR
+    HEXDUMP BYTE_VECTOR ◊ →LSUCCESS
+  LREAD_ERROR:
+    ⍞←"ERROR: failed to open file '",FILENAME,"'\n"
+  LSUCCESS:
 ∇
 
 ∇MAIN
