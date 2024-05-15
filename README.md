@@ -33,6 +33,9 @@ If you would like to install it, you do so with the following make command:
 make install
 ```
 
+Note that the script expects GnuAPL to be in /usr/bin/apl. Modify the shebang
+before-hand if your setup differs.
+
 You can also install it with Nix from the NUR
 (https://github.com/nix-community/NUR) with the following attribute:
 

@@ -25,6 +25,8 @@ FIO∆READ_ENTIRE_FILE←{⎕FIO[26] ⍵}
 FIO∆FREAD←{⎕FIO[6] ⍵}
 ⍝ Returns non-zero if EOF was reached for file descriptor ⍵.
 FIO∆FEOF←{⎕FIO[10] ⍵}
+⍝ Returns non-zero if an error ocurred reading file descriptor ⍵.
+FIO∆FERROR←{⎕FIO[11] ⍵}
 
 ⍝ The file descriptor for stdin.
 FIO∆STDIN←0
@@ -69,28 +71,32 @@ ARGS∆END_OF_OPTIONS←0
 
 ⍝ Parses a single command line ARGUMENT and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARG ARGUMENT
+  →ARGS∆ABORT ⍴ LABORT
+
   ⍝ If "++" was encountered, we just treat everything as a file.
   →ARGS∆END_OF_OPTIONS ⍴ LFILE
-
+  ⍝ Test for known options.
   →({ARGUMENT≡⍵}¨ "+h" "++help" "+v" "++version" "++") / LHELP LHELP LVERSION LVERSION LDOUBLE_PLUS
-    →(('+'≡↑ARGUMENT)∨"++"≡2↑ARGUMENT) ⍴ LINVALID_OPTION
+  ⍝ Jumps to error print if ARGUMENT is an unknown option.
+  →(('+'≡↑ARGUMENT)∨"++"≡2↑ARGUMENT) ⍴ LINVALID_OPTION
     ⍝ Anything leftover is a file.
     LFILE: ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
     →LSWITCH_END
   LINVALID_OPTION:
-    ⍞←"Unknown option '",ARGUMENT,"'\n"
-    ⍞←"Try 'ahd ++help' for more information.\n"
+    ⍞←"Error: unknown option '",ARGUMENT,"'\nTry 'ahd ++help' for more information\n"
     ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LHELP:
+  LHELP:        ⍝ +h, ++help
     ⍞←ARGS∆HELP
     ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LVERSION:
+  LVERSION:     ⍝ +v, ++version
     ⍞←ARGS∆VERSION
     ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LDOUBLE_PLUS:
+  LDOUBLE_PLUS: ⍝ ++
     ARGS∆END_OF_OPTIONS←1
     →LSWITCH_END
   LSWITCH_END:
+
+LABORT:
 ∇
 
 ⍝ Parses the command line ARGUMENTS and updates ARGS∆* accordingly.
