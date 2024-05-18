@@ -19,8 +19,9 @@
 
 
 ⍝ Reads in the enitrety of the file with name ⍵ as a byte vector. Returns ¯2 on
-⍝ failure.
-FIO∆READ_ENTIRE_FILE←{⎕FIO[26] ⍵}
+⍝ failure. ⎕FIO[26] actually returns a character vector of the bytes, so ⎕UCS is
+⍝ used to convert them to actual number like whats returned from ⎕FIO[6].
+FIO∆READ_ENTIRE_FILE←{⎕UCS (⎕FIO[26] ⍵)}
 ⍝ Reads up to 5,000 bytes in from file descriptor ⍵ as a byte vector.
 FIO∆FREAD←{⎕FIO[6] ⍵}
 ⍝ Returns non-zero if EOF was reached for file descriptor ⍵.
@@ -109,39 +110,49 @@ LABORT:
 
 
 
-⍝ The number of digits used to print the line's byte number (the value on the
-⍝ left with the colon after it.)
-BYTE_NUMBER_DIGITS←7
-⍝ The number of hexidecimal digits to print per line.
-HEX_DIGITS_PER_LINE←16
+⍝ The number of digits to use to print the line's byte offset.
+OFFSET_DIGITS←7
+⍝ The number of hexidecimal digits needed to represent a byte.
+BYTE_DIGITS←2
+⍝ The number of bytes to print out per line.
+BYTES_PER_LINE←16
 ⍝ The number of hexidecimal digits to group together without spaces.
 HEX_DIGITS_PER_BLOCK←2
+⍝ The bvte-value of a space character.
+SPACE_BYTE←⎕UCS ' '
 
 ⍝ Splits a vector ⍵ into partitions of size ⍺. If there is not enough elements
 ⍝ left for a full partition, the remaining elements will simply be placed in the
 ⍝ last partition.
 SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
 
-⍝ Converts a byte vector ⍵ into an uppercase-hexidecimal character vector.
-HEXIFY_BYTES←{5 ⎕CR ⍵}
 ⍝ Converts a number ⍵ into a uppercase-hexidecimal character vector with ⍺
 ⍝ hexidecimal digits.
-HEXIFY_NUMBER←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
+HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
-⍝ Prints out one line of the hexdump output. BYTE_NUMBER is the number of the
-⍝ byte that starts the line, and is also the return value. HEX_DIGITS is a
-⍝ character vector of hexidecimal digits for the line's hexdump.
-∇BYTE_NUMBER←BYTE_NUMBER HEXDUMP_LINE HEX_DIGITS
-  ⍞←BYTE_NUMBER_DIGITS HEXIFY_NUMBER BYTE_NUMBER
-  ⍞←":"
-  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION HEX_DIGITS
+⍝ Accepts a byte ⍵. If ⍵ represents an ASCII character, which is guaranteed to
+⍝ be displayable, and not a control character, 1 will be returned, else 0.
+IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
+
+⍝ Prints out a line of hexdump output of the BYTE_VECTOR. OFFSET is the current
+⍝ line's byte offset and is also the return value.
+∇OFFSET←OFFSET HEXDUMP_LINE BYTE_VECTOR
+  ⍝ Offset.
+  ⍞←OFFSET_DIGITS HEXIFY OFFSET ◊ ⍞←":"
+  ⍝ Bytes.
+  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION ↑,/ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
+  ⍝ Characters.
+  ⍞←" |",⍨ ⎕UCS SPACE_BYTE /⍨ (BYTE_DIGITS+1)×BYTES_PER_LINE - ≢BYTE_VECTOR
+  ⍞←⎕UCS {(SPACE_BYTE ⍵)⌷⍨1+ IS_DISPLAYABLE ⍵}¨ BYTE_VECTOR
+  ⍞←"|"
+
   ⍞←"\n"
 ∇
 
 ⍝ Prints out a hexdump of BYTE_VECTOR.
-∇HEXDUMP BYTE_VECTOR; BYTE_NUMBER
-  BYTE_NUMBER←0
-  ⊣ {BYTE_NUMBER←HEX_DIGITS_PER_LINE+ BYTE_NUMBER HEXDUMP_LINE HEXIFY_BYTES ⍵}¨ HEX_DIGITS_PER_LINE SIZED_PARTITION BYTE_VECTOR
+∇HEXDUMP BYTE_VECTOR; OFFSET
+  OFFSET←0
+  ⊣ {OFFSET←BYTES_PER_LINE+ OFFSET HEXDUMP_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
 ∇
 
 ⍝ Prints out a hexdump of the contents of file FILENAME. If PRINT_FILENAME is 1,
