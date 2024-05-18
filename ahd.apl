@@ -59,7 +59,7 @@ Options:
  +h, ++help    display this help information.
  +v, ++version display version.
 """
-ARGS∆VERSION←"ahd 0.1.1"
+ARGS∆VERSION←"ahd 0.1.2"
 
 ⍝ A vector of filenames given via the command line.
 ARGS∆FILENAMES←⍬

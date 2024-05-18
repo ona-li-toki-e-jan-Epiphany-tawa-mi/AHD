@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Added character output.
+
 ## 0.1.1
 
 - Fixed error with FIO∆FERROR not being present.
