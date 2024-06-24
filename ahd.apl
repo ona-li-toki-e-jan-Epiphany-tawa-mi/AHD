@@ -56,8 +56,8 @@ Displays FILE contents (or input from stdin if no FILEs were specified) in
 hexidecimal.
 
 Options:
- +h, ++help    display this help information.
- +v, ++version display version.
+  +h, ++help    display this help information.
+  +v, ++version display version.
 """
 ARGS∆VERSION←"ahd 0.1.2"
 
