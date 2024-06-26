@@ -4,9 +4,12 @@ A simple hexdump utility I wrote. That's it.
 
 ## How to run
 
-You will need the GnuAPL interpreter (https://www.gnu.org/software/apl)
-installed on your system. There is a `flake.nix` you can use with
-`nix develop path:.` to get it.
+Dependencies:
+
+- GnuAPL: (https://www.gnu.org/software/apl)
+
+There is a `flake.nix` you can use with `nix develop path:.` to generate a
+development enviroment.
 
 Then, run one of the following commands to get started:
 
