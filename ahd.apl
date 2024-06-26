@@ -18,15 +18,17 @@
 
 
 
-⍝ Reads in the enitrety of the file with name ⍵ as a byte vector. Returns ¯2 on
-⍝ failure. ⎕FIO[26] actually returns a character vector of the bytes, so ⎕UCS is
-⍝ used to convert them to actual number like whats returned from ⎕FIO[6].
+⍝ Reads in the enitrety of the file a byte vector. ⎕FIO[26] actually returns a
+⍝ character vector of the bytes, so ⎕UCS is used to convert them to actual
+⍝ numbers like whats returned from ⎕FIO[6].
+⍝ →⍵ - the name of the file.
+⍝ →a byte vector, or ¯2 on failure.
 FIO∆READ_ENTIRE_FILE←{⎕UCS (⎕FIO[26] ⍵)}
-⍝ Reads up to 5,000 bytes in from file descriptor ⍵ as a byte vector.
+⍝ Reads up to 5,000 bytes in from the file descriptor as a byte vector.
 FIO∆FREAD←{⎕FIO[6] ⍵}
-⍝ Returns non-zero if EOF was reached for file descriptor ⍵.
+⍝ Returns non-zero if EOF was reached for the file descriptor.
 FIO∆FEOF←{⎕FIO[10] ⍵}
-⍝ Returns non-zero if an error ocurred reading file descriptor ⍵.
+⍝ Returns non-zero if an error ocurred reading file descriptor.
 FIO∆FERROR←{⎕FIO[11] ⍵}
 
 ⍝ The file descriptor for stdin.
@@ -70,7 +72,7 @@ ARGS∆ABORT←0
 ⍝ to be treated as files.
 ARGS∆END_OF_OPTIONS←0
 
-⍝ Parses a single command line ARGUMENT and updates ARGS∆* accordingly.
+⍝ Parses a command line argument and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARG ARGUMENT
   →ARGS∆ABORT ⍴ LABORT
 
@@ -100,7 +102,7 @@ ARGS∆END_OF_OPTIONS←0
 LABORT:
 ∇
 
-⍝ Parses the command line ARGUMENTS and updates ARGS∆* accordingly.
+⍝ Parses command line arguments and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARGS ARGUMENTS
   ⍝ ⎕ARG looks like "apl --script <script> --" plus whatever the user put.
   →(4≥≢ARGUMENTS) ⍴ LNO_ARGUMENTS
@@ -121,21 +123,27 @@ HEX_DIGITS_PER_BLOCK←2
 ⍝ The bvte-value of a space character.
 SPACE_BYTE←⎕UCS ' '
 
-⍝ Splits a vector ⍵ into partitions of size ⍺. If there is not enough elements
+⍝ Splits a vector into partitions of the specified size. If there is not enough elements
 ⍝ left for a full partition, the remaining elements will simply be placed in the
 ⍝ last partition.
+⍝ →⍵ - the vector to partition.
+⍝ →⍺ - the size of the paritions.
 SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
 
-⍝ Converts a number ⍵ into a uppercase-hexidecimal character vector with ⍺
-⍝ hexidecimal digits.
+⍝ Converts a number into a uppercase-hexidecimal character vector.
+⍝ →⍵ - the number.
+⍝ →⍺ - the number of digits the resulting vector should have.
 HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
-⍝ Accepts a byte ⍵. If ⍵ represents an ASCII character, which is guaranteed to
-⍝ be displayable, and not a control character, 1 will be returned, else 0.
+⍝ Returns whether the given byte is a displayable, non-control ASCII character.
+⍝ →⍵ - a byte.
+⍝ ←1 if the byte matches the criteria, else 0.
 IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 
-⍝ Prints out a line of hexdump output of the BYTE_VECTOR. OFFSET is the current
-⍝ line's byte offset and is also the return value.
+⍝ Prints out a line of hexdump output of the byte vector.
+⍝ →BYTE_VECTOR - the byte vector.
+⍝ →OFFSET - the current line's byte offset.
+⍝ ←OFFSET - OFFSET.
 ∇OFFSET←OFFSET HEXDUMP_LINE BYTE_VECTOR
   ⍝ Offset.
   ⍞←OFFSET_DIGITS HEXIFY OFFSET ◊ ⍞←":"
@@ -149,7 +157,7 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   ⍞←"\n"
 ∇
 
-⍝ Prints out a hexdump of BYTE_VECTOR.
+⍝ Prints out a hexdump of the given byte vector.
 ∇HEXDUMP BYTE_VECTOR; OFFSET
   OFFSET←0
   ⊣ {OFFSET←BYTES_PER_LINE+ OFFSET HEXDUMP_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
@@ -157,6 +165,11 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 
 
 
+⍝ Handles printing the output of the given file (hexdump, code, etc..).
+⍝ →FILENAME - the filename to print. A value with a tally of 0 means don't
+⍝ print.
+⍝ →BYTE_VECTOR - the raw byte contents of the file.
+⍝ ←IGNORE - magic return value so the function works in defuns.
 ∇IGNORE←FILENAME HANDLE_FILE BYTE_VECTOR
   →(0≡≢FILENAME) ⍴ LDONT_PRINT_FILENAME
     ⎕←FILENAME,":"
