@@ -38,3 +38,7 @@ with the following attribute:
 ```nix
 nur.repos.ona-li-toki-e-jan-Epiphany-tawa-mi.ahd
 ```
+
+## Release notes
+
+- Added C code generator.

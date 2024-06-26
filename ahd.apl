@@ -93,7 +93,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
 ⍝ Displays the version and exits.
 ∇ARGS∆DISPLAY_VERSION
-  ⍞←"ahd 0.1.2"
+  ⍞←"ahd 0.1.3"
   ARGS∆ABORT←1
 ∇
 
