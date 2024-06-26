@@ -48,21 +48,6 @@ FIO∆STDIN←0
 
 
 
-ARGS∆HELP←⊃"""
-Usages:
-  ahd [options...] [FILE...]
-  ./ahd.apl [options...] [FILE...]
-  apl --script ahd.apl -- [options...] [FILE...]
-
-Displays FILE contents (or input from stdin if no FILEs were specified) in
-hexidecimal.
-
-Options:
-  +h, ++help    display this help information.
-  +v, ++version display version.
-"""
-ARGS∆VERSION←"ahd 0.1.2"
-
 ⍝ A vector of filenames given via the command line.
 ARGS∆FILENAMES←⍬
 ⍝ If 1, the program should abort, else 0. This would either be due to an error
@@ -71,6 +56,71 @@ ARGS∆ABORT←0
 ⍝ Whether "++" was encountered, meaning all following option-like arguments are
 ⍝ to be treated as files.
 ARGS∆END_OF_OPTIONS←0
+⍝ If of tally > 0, the code generator should be used. The value of this variable
+⍝ will be the name of the language to generate for as a character vector.
+ARGS∆CODE_GENERATOR_LANGUAGE←0
+
+⍝ For options with arguments. When set to 1, the next argument is evaluated as
+⍝ the repsective option's argument.
+ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
+
+⍝ Displays and error message and exits.
+∇ARGS∆FATAL_ERROR MESSAGE
+  ⍞←"Error: "
+  ⍞←MESSAGE
+  ⍞←"\nTry 'ahd +h' for more information"
+  ARGS∆ABORT←1
+∇
+
+⍝ Displays help information and exits.
+∇ARGS∆DISPLAY_HELP
+  ⍞←"Usages:\n"
+  ⍞←"  ahd [options...] [FILE...]\n"
+  ⍞←"  ./ahd.apl [options...] [FILE...]\n"
+  ⍞←"  apl --script ahd.apl -- [options...] [FILE...]\n"
+  ⍞←"\n"
+  ⍞←"Displays FILE contents (or input from stdin if no FILEs were specified) in\n"
+  ⍞←"hexidecimal.\n"
+  ⍞←"\n"
+  ⍞←"Options:\n"
+  ⍞←"  +h, ++help    display this help information.\n"
+  ⍞←"  +v, ++version display version."
+  ARGS∆ABORT←1
+∇
+
+⍝ Displays the version and exits.
+∇ARGS∆DISPLAY_VERSION
+  ⍞←"ahd 0.1.2"
+  ARGS∆ABORT←1
+∇
+
+⍝ Enables the code generator and tries to and set it to use the given language.
+∇ARGS∆SET_CODE_GENERATOR_LANGUAGE LANGUAGE
+  →("c"≡LANGUAGE) ⍴ LKNOWN_LANGUAGE
+    ARGS∆FATAL_ERROR "language '",LANGUAGE,"' does not support code generation"
+    ARGS∆ABORT←1 ◊ →LABORT
+  LKNOWN_LANGUAGE:
+
+  ARGS∆CODE_GENERATOR_LANGUAGE←LANGUAGE
+  ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
+
+LABORT:
+∇
+
+⍝ Parses a single character option (anything aftoptioner a "+") and updates ARGS∆*
+⍝ accordingly.
+∇ARGS∆PARSE_SHORT_OPTION OPTION
+  →ARGS∆ABORT ⍴ LABORT
+
+  →({OPTION≡⍵}¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
+  LDEFAULT:        ARGS∆FATAL_ERROR "unknown option '+",OPTION,"'" ◊ →LSWITCH_END
+  LHELP:           ARGS∆DISPLAY_HELP                               ◊ →LSWITCH_END
+  LVERSION:        ARGS∆DISPLAY_VERSION                            ◊ →LSWITCH_END
+  LCODE_GENERATOR: ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1           ◊ →LSWITCH_END
+  LSWITCH_END:
+
+LABORT:
+∇
 
 ⍝ Parses a command line argument and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARG ARGUMENT
@@ -78,25 +128,28 @@ ARGS∆END_OF_OPTIONS←0
 
   ⍝ If "++" was encountered, we just treat everything as a file.
   →ARGS∆END_OF_OPTIONS ⍴ LFILE
-  ⍝ Test for known options.
-  →({ARGUMENT≡⍵}¨ "+h" "++help" "+v" "++version" "++") / LHELP LHELP LVERSION LVERSION LDOUBLE_PLUS
-  ⍝ Jumps to error print if ARGUMENT is an unknown option.
-  →(('+'≡↑ARGUMENT)∨"++"≡2↑ARGUMENT) ⍴ LINVALID_OPTION
+  ⍝ Handles arguments to options with arguments.
+  →ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE ⍴ LSET_CODE_GENERATOR_LANGUAGE
+  ⍝ Handles "++".
+  →("++"≡ARGUMENT) ⍴ LDOUBLE_PLUS
+  ⍝ Handles short options
+  →((1<≢ARGUMENT)∧('+'≡↑ARGUMENT)∧"++"≢2↑ARGUMENT) ⍴ LSHORT_OPTION
+  ⍝ Test for known long options.
+  →({ARGUMENT≡⍵}¨ "++help" "++version" "++code_generator") / LHELP LVERSION LCODE_GENERATOR
+  ⍝ Jumps to error print if ARGUMENT is an unknown long option.
+  →("++"≡2↑ARGUMENT) ⍴ LINVALID_LONG_OPTION
     ⍝ Anything leftover is a file.
     LFILE: ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
     →LSWITCH_END
-  LINVALID_OPTION:
-    ⍞←"Error: unknown option '",ARGUMENT,"'\nTry 'ahd ++help' for more information\n"
-    ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LHELP:        ⍝ +h, ++help
-    ⍞←ARGS∆HELP
-    ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LVERSION:     ⍝ +v, ++version
-    ⍞←ARGS∆VERSION
-    ARGS∆ABORT←1 ◊ →LSWITCH_END
-  LDOUBLE_PLUS: ⍝ ++
-    ARGS∆END_OF_OPTIONS←1
+  LINVALID_LONG_OPTION: ARGS∆FATAL_ERROR "unknown option '",ARGUMENT,"'" ◊ →LSWITCH_END
+  LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT              ◊ →LSWITCH_END
+  LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                            ◊ →LSWITCH_END
+  LSET_CODE_GENERATOR_LANGUAGE:
+    ARGS∆SET_CODE_GENERATOR_LANGUAGE ARGUMENT
     →LSWITCH_END
+  LHELP:                ARGS∆DISPLAY_HELP                                ◊ →LSWITCH_END
+  LVERSION:             ARGS∆DISPLAY_VERSION                             ◊ →LSWITCH_END
+  LCODE_GENERATOR:      ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1            ◊ →LSWITCH_END
   LSWITCH_END:
 
 LABORT:
@@ -108,6 +161,16 @@ LABORT:
   →(4≥≢ARGUMENTS) ⍴ LNO_ARGUMENTS
     ARGS∆PARSE_ARG¨ 4↓ARGUMENTS
   LNO_ARGUMENTS:
+
+  →ARGS∆ABORT ⍴ LABORT
+
+  ⍝ Tests for any options with arguments that were not supplied an argument.
+  →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
+    ARGS∆FATAL_ERROR "options '+c' and '++code_generator' expect an argument"
+    →LABORT
+  LNO_INVALID_OPTIONS:
+
+LABORT:
 ∇
 
 
