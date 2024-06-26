@@ -155,19 +155,22 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   ⊣ {OFFSET←BYTES_PER_LINE+ OFFSET HEXDUMP_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
 ∇
 
-⍝ Prints out a hexdump of the contents of file FILENAME. If PRINT_FILENAME is 1,
-⍝ the name of the file will be printed beforehand, else it won't if 0.
-∇PRINT_FILENAME HEXDUMP_FILE FILENAME; BYTE_VECTOR
-  →(~PRINT_FILENAME) ⍴ LDONT_PRINT_FILENAME
+
+
+∇IGNORE←FILENAME HANDLE_FILE BYTE_VECTOR
+  →(0≡≢FILENAME) ⍴ LDONT_PRINT_FILENAME
     ⎕←FILENAME,":"
   LDONT_PRINT_FILENAME:
 
-  BYTE_VECTOR←FIO∆READ_ENTIRE_FILE FILENAME
-  →(¯2≡BYTE_VECTOR) ⍴ LREAD_ERROR
-    HEXDUMP BYTE_VECTOR ◊ →LSUCCESS
-  LREAD_ERROR:
-    ⍞←"ERROR: failed to open file '",FILENAME,"'\n"
-  LSUCCESS:
+  →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
+     ⍞←"ERROR: failed to open file\n"
+    →LABORT
+  LNO_READ_ERROR:
+
+  HEXDUMP BYTE_VECTOR
+
+LABORT:
+  IGNORE←⍬
 ∇
 
 ∇MAIN
@@ -175,13 +178,18 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   →ARGS∆ABORT ⍴ LABORT
 
   →(0≡≢ARGS∆FILENAMES) ⍴ LREAD_STDIN
-    ⍝ If we have more than one file, we print out the file name to identify each
-    ⍝ hexdump.
-    (1≢≢ARGS∆FILENAMES) HEXDUMP_FILE¨ ARGS∆FILENAMES
-    →LDONT_READ_STDIN
+  →(1≡≢ARGS∆FILENAMES) ⍴ LREAD_FILE
+    ⍝ We only add the filenames when there are multiple fixes to output, to
+    ⍝ differentiate them.
+    ⊣ {⍵ HANDLE_FILE FIO∆READ_ENTIRE_FILE ⍵}¨ ARGS∆FILENAMES
+    →LSWITCH_END
+  LREAD_FILE:
+    ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES
+    →LSWITCH_END
   LREAD_STDIN:
-    HEXDUMP FIO∆READ_ENTIRE_STDIN
-  LDONT_READ_STDIN:
+    ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_STDIN
+    →LSWITCH_END
+  LSWITCH_END:
 
 LABORT:
 ∇
