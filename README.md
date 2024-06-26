@@ -8,11 +8,11 @@ You will need the GnuAPL interpreter (https://www.gnu.org/software/apl)
 installed on your system. There is a `flake.nix` you can use with
 `nix develop path:.` to get it.
 
-Then, run one of the following commands to run AHD:
+Then, run one of the following commands to get started:
 
 ```
-./ahd.apl [options...] [FILE...]
-apl --script ahd.apl -- [options...] [FILE...]
+./ahd.apl +h
+apl --script ahd.apl -- +h
 ```
 
 #### Options
@@ -24,6 +24,11 @@ Displays help information.
 - +v, ++version
 
 Displays version.
+
+- +c, ++code-generator
+
+Outputs code to bake the data into a program. Expects a language as an argument.
+Supported Languages: c.
 
 ## How to install
 
