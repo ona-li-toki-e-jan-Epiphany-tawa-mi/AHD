@@ -58,7 +58,7 @@ ARGS∆ABORT←0
 ARGS∆END_OF_OPTIONS←0
 ⍝ If of tally > 0, the code generator should be used. The value of this variable
 ⍝ will be the name of the language to generate for as a character vector.
-ARGS∆CODE_GENERATOR_LANGUAGE←0
+ARGS∆CODE_GENERATOR_LANGUAGE←⍬
 
 ⍝ For options with arguments. When set to 1, the next argument is evaluated as
 ⍝ the repsective option's argument.
