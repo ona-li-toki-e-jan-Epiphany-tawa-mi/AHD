@@ -175,6 +175,14 @@ LABORT:
 
 
 
+⍝ Converts a number into a uppercase-hexidecimal character vector.
+⍝ →⍵ - the number.
+⍝ →⍺ - the number of digits the resulting vector should have.
+⍝ ←The character vector.
+HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
+
+
+
 ⍝ The number of digits to use to print the line's byte offset.
 OFFSET_DIGITS←7
 ⍝ The number of hexidecimal digits needed to represent a byte.
@@ -192,11 +200,6 @@ SPACE_BYTE←⎕UCS ' '
 ⍝ →⍵ - the vector to partition.
 ⍝ →⍺ - the size of the paritions.
 SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
-
-⍝ Converts a number into a uppercase-hexidecimal character vector.
-⍝ →⍵ - the number.
-⍝ →⍺ - the number of digits the resulting vector should have.
-HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
 ⍝ Returns whether the given byte is a displayable, non-control ASCII character.
 ⍝ →⍵ - a byte.
@@ -228,6 +231,27 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 
 
 
+⍝ Prints out a line of C code output of the byte vector.
+⍝ →BYTE_VECTOR - the byte vector to print.
+⍝ ←IGNORE - magic return value so the function works in defuns.
+∇IGNORE←GENERATE_C_LINE BYTE_VECTOR
+  ⍞←"    "
+  ⊣ {⍞←", " ⊣ ⍞←⍵ ⊣ ⍞←"0x"}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION ↑,/ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
+  ⍞←"\n"
+
+  IGNORE←⍬
+∇
+
+⍝ Prints out C code of the byte vector.
+∇GENERATE_C BYTE_VECTOR
+  ⍞←"unsigned char data[] = {\n"
+  ⊣ {GENERATE_C_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
+  ⍞←"};\n"
+  ⍞←"unsigned int data_length = " ◊ ⍞←≢BYTE_VECTOR ◊ ⍞←";\n"
+∇
+
+
+
 ⍝ Handles printing the output of the given file (hexdump, code, etc..).
 ⍝ →FILENAME - the filename to print. A value with a tally of 0 means don't
 ⍝ print.
@@ -239,11 +263,15 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   LDONT_PRINT_FILENAME:
 
   →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
-     ⍞←"ERROR: failed to open file\n"
+     ⍞←"Error: failed to open file\n"
     →LABORT
   LNO_READ_ERROR:
 
-  HEXDUMP BYTE_VECTOR
+  ⍝ If a code generator is selected, we use that, else we just do a hexdump.
+  →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
+  LDEFAULT:    HEXDUMP BYTE_VECTOR    ◊ →LSWITCH_END
+  LGENERATE_C: GENERATE_C BYTE_VECTOR ◊ →LSWITCH_END
+  LSWITCH_END:
 
 LABORT:
   IGNORE←⍬
@@ -259,12 +287,8 @@ LABORT:
     ⍝ differentiate them.
     ⊣ {⍵ HANDLE_FILE FIO∆READ_ENTIRE_FILE ⍵}¨ ARGS∆FILENAMES
     →LSWITCH_END
-  LREAD_FILE:
-    ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES
-    →LSWITCH_END
-  LREAD_STDIN:
-    ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_STDIN
-    →LSWITCH_END
+  LREAD_FILE:  ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
+  LREAD_STDIN: ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_STDIN                ◊ →LSWITCH_END
   LSWITCH_END:
 
 LABORT:
