@@ -141,8 +141,10 @@ LABORT:
   →({ARGUMENT≡⍵}¨ "++help" "++version" "++code-generator") / LHELP LVERSION LCODE_GENERATOR
   ⍝ Jumps to error print if ARGUMENT is an unknown long option.
   →("++"≡2↑ARGUMENT) ⍴ LINVALID_LONG_OPTION
+  LDEFAULT:
+  LFILE:
     ⍝ Anything leftover is a file.
-    LFILE: ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
+    ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
     →LSWITCH_END
   LINVALID_LONG_OPTION: ARGS∆FATAL_ERROR "unknown option '",ARGUMENT,"'" ◊ →LSWITCH_END
   LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT              ◊ →LSWITCH_END
@@ -266,13 +268,18 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   LDONT_PRINT_FILENAME:
 
   →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
-     ⍞←"Error: failed to open file\n"
+    ⍞←"Error: failed to open file\n"
     →LABORT
   LNO_READ_ERROR:
 
   ⍝ If a code generator is selected, we use that, else we just do a hexdump.
   →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
-  LDEFAULT:    HEXDUMP BYTE_VECTOR    ◊ →LSWITCH_END
+  LDEFAULT:
+    →(0≡≢ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LNO_SET_LANGUAGE
+      ⍞←"Error: HANDLE_FILE: unexpected code generator language '",ARGS∆CODE_GENERATOR_LANGUAGE,"'"
+      →LABORT
+    LNO_SET_LANGUAGE:
+    HEXDUMP BYTE_VECTOR ◊ →LSWITCH_END
   LGENERATE_C: GENERATE_C BYTE_VECTOR ◊ →LSWITCH_END
   LSWITCH_END:
 
