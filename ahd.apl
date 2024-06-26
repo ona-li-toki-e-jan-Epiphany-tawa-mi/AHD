@@ -84,7 +84,10 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍞←"\n"
   ⍞←"Options:\n"
   ⍞←"  +h, ++help    display this help information.\n"
-  ⍞←"  +v, ++version display version."
+  ⍞←"  +v, ++version display version.\n"
+  ⍞←"  +c, ++code-generator\n"
+  ⍞←"    Outputs code to bake the data into a program. Expects a language as an\n"
+  ⍞←"    argument. Supported Languages: c"
   ARGS∆ABORT←1
 ∇
 
@@ -135,7 +138,7 @@ LABORT:
   ⍝ Handles short options
   →((1<≢ARGUMENT)∧('+'≡↑ARGUMENT)∧"++"≢2↑ARGUMENT) ⍴ LSHORT_OPTION
   ⍝ Test for known long options.
-  →({ARGUMENT≡⍵}¨ "++help" "++version" "++code_generator") / LHELP LVERSION LCODE_GENERATOR
+  →({ARGUMENT≡⍵}¨ "++help" "++version" "++code-generator") / LHELP LVERSION LCODE_GENERATOR
   ⍝ Jumps to error print if ARGUMENT is an unknown long option.
   →("++"≡2↑ARGUMENT) ⍴ LINVALID_LONG_OPTION
     ⍝ Anything leftover is a file.
@@ -166,7 +169,7 @@ LABORT:
 
   ⍝ Tests for any options with arguments that were not supplied an argument.
   →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
-    ARGS∆FATAL_ERROR "options '+c' and '++code_generator' expect an argument"
+    ARGS∆FATAL_ERROR "options '+c' and '++code-generator' expect an argument"
     →LABORT
   LNO_INVALID_OPTIONS:
 
