@@ -23,7 +23,7 @@
 ⍝ numbers like whats returned from ⎕FIO[6].
 ⍝ →⍵ - the name of the file.
 ⍝ →a byte vector, or ¯2 on failure.
-FIO∆READ_ENTIRE_FILE←{⎕UCS (⎕FIO[26] ⍵)}
+FIO∆READ_ENTIRE_FILE←{{↑(¯2≡⍵)↓(⎕UCS ⍵) ⍵}(⎕FIO[26] ⍵)}
 ⍝ Reads up to 5,000 bytes in from the file descriptor as a byte vector.
 FIO∆FREAD←{⎕FIO[6] ⍵}
 ⍝ Returns non-zero if EOF was reached for the file descriptor.
@@ -266,7 +266,7 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   LDONT_PRINT_FILENAME:
 
   →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
-    ⍞←"Error: failed to open file\n"
+    ⍞←"Error: failed to open file"
     →LABORT
   LNO_READ_ERROR:
 
