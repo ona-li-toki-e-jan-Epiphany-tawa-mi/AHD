@@ -1,5 +1,7 @@
 # Changelog
 
+- Added C code genearator.
+
 ## 0.1.2
 
 - Added character output.
