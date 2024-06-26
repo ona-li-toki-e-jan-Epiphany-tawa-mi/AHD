@@ -186,6 +186,13 @@ LABORT:
 ⍝ ←The character vector.
 HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
+⍝ Splits a vector into partitions of the specified size. If there is not enough elements
+⍝ left for a full partition, the remaining elements will simply be placed in the
+⍝ last partition.
+⍝ →⍵ - the vector to partition.
+⍝ →⍺ - the size of the paritions.
+SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
+
 
 
 ⍝ The number of digits to use to print the line's byte offset.
@@ -194,17 +201,8 @@ OFFSET_DIGITS←7
 BYTE_DIGITS←2
 ⍝ The number of bytes to print out per line.
 BYTES_PER_LINE←16
-⍝ The number of hexidecimal digits to group together without spaces.
-HEX_DIGITS_PER_BLOCK←2
 ⍝ The bvte-value of a space character.
 SPACE_BYTE←⎕UCS ' '
-
-⍝ Splits a vector into partitions of the specified size. If there is not enough elements
-⍝ left for a full partition, the remaining elements will simply be placed in the
-⍝ last partition.
-⍝ →⍵ - the vector to partition.
-⍝ →⍺ - the size of the paritions.
-SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
 
 ⍝ Returns whether the given byte is a displayable, non-control ASCII character.
 ⍝ →⍵ - a byte.
@@ -219,7 +217,7 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   ⍝ Offset.
   ⍞←OFFSET_DIGITS HEXIFY OFFSET ◊ ⍞←":"
   ⍝ Bytes.
-  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION ↑,/ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
+  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
   ⍝ Characters.
   ⍞←" |",⍨ ⎕UCS SPACE_BYTE /⍨ (BYTE_DIGITS+1)×BYTES_PER_LINE - ≢BYTE_VECTOR
   ⍞←⎕UCS {(SPACE_BYTE ⍵)⌷⍨1+ IS_DISPLAYABLE ⍵}¨ BYTE_VECTOR
@@ -241,7 +239,7 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 ⍝ ←IGNORE - magic return value so the function works in defuns.
 ∇IGNORE←GENERATE_C_LINE BYTE_VECTOR
   ⍞←"    "
-  ⊣ {⍞←", " ⊣ ⍞←⍵ ⊣ ⍞←"0x"}¨ HEX_DIGITS_PER_BLOCK SIZED_PARTITION ↑,/ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
+  ⊣ {⍞←", " ⊣ ⍞←⍵ ⊣ ⍞←"0x"}¨ 2 HEXIFY¨ BYTE_VECTOR
   ⍞←"\n"
 
   IGNORE←⍬
@@ -250,7 +248,7 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 ⍝ Prints out C code of the byte vector.
 ∇GENERATE_C BYTE_VECTOR
   ⍞←"unsigned char data[] = {\n"
-  ⊣ {GENERATE_C_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
+  ⊣ {GENERATE_C_LINE ⍵}¨ 16 SIZED_PARTITION BYTE_VECTOR
   ⍞←"};\n"
   ⍞←"unsigned int data_length = " ◊ ⍞←≢BYTE_VECTOR ◊ ⍞←";\n"
 ∇
