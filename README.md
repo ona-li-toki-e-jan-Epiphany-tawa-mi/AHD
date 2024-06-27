@@ -18,21 +18,6 @@ Then, run one of the following commands to get started:
 apl --script ahd.apl -- +h
 ```
 
-#### Options
-
-- +h, ++help
-
-Displays help information.
-
-- +v, ++version
-
-Displays version.
-
-- +c, ++code-generator
-
-Outputs code to bake the data into a program. Expects a language as an argument.
-Supported Languages: c.
-
 ## How to install
 
 You can install it with Nix from the NUR (https://github.com/nix-community/NUR)
