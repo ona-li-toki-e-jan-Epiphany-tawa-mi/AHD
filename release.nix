@@ -20,12 +20,13 @@
 #   nix-build release.nix -A <attribute>
 
 # We use nixpkgs-unstable since the NUR does as well.
-{ nixpkgs ? builtins.fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-unstable" }:
+{ nixpkgs ? builtins.fetchTarball "https://github.com/NixOS/nixpkgs/tarball/nixos-unstable"
+, src     ? ./.
+}:
 
 let pkgs = (import nixpkgs {});
 
     name = "ahd";
-    src  = ./.;
 in
 {
   # Makes tarballs of the source code.
