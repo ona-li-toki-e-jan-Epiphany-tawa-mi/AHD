@@ -6,7 +6,7 @@ A simple hexdump utility I wrote. That's it.
 
 Dependencies:
 
-- GnuAPL: (https://www.gnu.org/software/apl)
+- GnuAPL: ([https://www.gnu.org/software/apl](https://www.gnu.org/software/apl))
 
 There is a `flake.nix` you can use with `nix develop path:.` to generate a
 development enviroment.
@@ -20,7 +20,7 @@ apl --script ahd.apl -- +h
 
 ## How to install
 
-You can install it with Nix from the NUR (https://github.com/nix-community/NUR)
+You can install it with Nix from the NUR ([https://github.com/nix-community/NUR](https://github.com/nix-community/NUR))
 with the following attribute:
 
 ```nix
