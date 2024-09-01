@@ -18,51 +18,8 @@
 
 
 
-⍝ TODO Abstract out FIO stuff to separate file.
-⍝ Zn ←    ⎕FIO[29] Bs    return file names in directory Bs
-⍝ Returns the names of the files and directories in the given directory.
-FIO∆LIST_DIRECTORY←{⎕FIO[29] ⍵}
-⍝ Zh ← As ⎕FIO[ 3] Bs    fopen(Bs, As) filename Bs mode As
-⍝ Opens a file with fopen.
-⍝ →⍺ - mode (i.e. "w", "r+", etc..)
-⍝ →⍵ - file path.
-⍝ ←The file descriptor.
-FIO∆FOPEN←{⍺ ⎕FIO[3] ⍵}
-⍝ Ze ←    ⎕FIO[ 4] Bh    fclose(Bh)
-⍝ Closes a file descriptor.
-⍝ →⍵ - file descriptor.
-⍝ ←Error code.
-FIO∆FCLOSE←{⎕FIO[4] ⍵}
-⍝ Writes to a file descriptor.
-⍝ →⍵ - file descriptor.
-⍝ →⍺ - data as byte vector.
-FIO∆FWRITE←{⍺ ⎕FIO[7] ⍵}
-⍝ Returns non-zero if EOF was reached for the file descriptor.
-FIO∆FEOF←{⎕FIO[10] ⍵}
-⍝ Returns non-zero if an error ocurred reading file descriptor.
-FIO∆FERROR←{⎕FIO[11] ⍵}
-⍝ Reads up to 5,000 bytes in from the file descriptor as a byte vector.
-FIO∆FREAD←{⎕FIO[6] ⍵}
-⍝ Starts the given process and returns a read-only file descriptor representing
-⍝ the output.
-FIO∆POPEN_READ←{⎕FIO[24] ⍵}
-⍝ Closes a file descripter opened with FIO∆POPEN_READ.
-⍝ →⍵ - process file descriptor.
-⍝ ←Error code.
-FIO∆PCLOSE←{⎕FIO[25] ⍵}
-
-⍝ Reads input from the file descriptor until EOF is reached and outputs the
-⍝ contents as a byte vector.
-∇BYTE_VECTOR←FIO∆READ_ENTIRE_FD FILE_DESCRIPTOR
-  BYTE_VECTOR←⍬
-
-  LREAD_LOOP:
-    BYTE_VECTOR←BYTE_VECTOR,FIO∆FREAD FILE_DESCRIPTOR
-    →(0≢FIO∆FEOF   FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
-    →(0≢FIO∆FERROR FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
-    →LREAD_LOOP
-  LEND_READ_LOOP:
-∇
+⍝ ⎕FIO functions abstraction layer.
+⊣ ⍎")COPY_ONCE fio.apl"
 
 
 

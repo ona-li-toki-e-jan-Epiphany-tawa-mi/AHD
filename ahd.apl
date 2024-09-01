@@ -18,33 +18,8 @@
 
 
 
-⍝ Reads in the enitrety of the file a byte vector. ⎕FIO[26] actually returns a
-⍝ character vector of the bytes, so ⎕UCS is used to convert them to actual
-⍝ numbers like whats returned from ⎕FIO[6].
-⍝ →⍵ - the name of the file.
-⍝ →a byte vector, or ¯2 on failure.
-FIO∆READ_ENTIRE_FILE←{{↑(¯2≡⍵)↓(⎕UCS ⍵) ⍵}(⎕FIO[26] ⍵)}
-⍝ Reads up to 5,000 bytes in from the file descriptor as a byte vector.
-FIO∆FREAD←{⎕FIO[6] ⍵}
-⍝ Returns non-zero if EOF was reached for the file descriptor.
-FIO∆FEOF←{⎕FIO[10] ⍵}
-⍝ Returns non-zero if an error ocurred reading file descriptor.
-FIO∆FERROR←{⎕FIO[11] ⍵}
-
-⍝ The file descriptor for stdin.
-FIO∆STDIN←0
-⍝ Reads input from stdin until EOF is reached and outputs the contents as a
-⍝ byte vector.
-∇BYTE_VECTOR←FIO∆READ_ENTIRE_STDIN
-  BYTE_VECTOR←⍬
-
-  LREAD_LOOP:
-    BYTE_VECTOR←BYTE_VECTOR,FIO∆FREAD FIO∆STDIN
-    →(0≢FIO∆FEOF   FIO∆STDIN) ⍴ LEND_READ_LOOP
-    →(0≢FIO∆FERROR FIO∆STDIN) ⍴ LEND_READ_LOOP
-    →LREAD_LOOP
-  LEND_READ_LOOP:
-∇
+⍝ ⎕FIO functions abstraction layer.
+⊣ ⍎")COPY_ONCE fio.apl"
 
 
 
@@ -296,7 +271,7 @@ LABORT:
     ⊣ {⍵ HANDLE_FILE FIO∆READ_ENTIRE_FILE ⍵}¨ ARGS∆FILENAMES
     →LSWITCH_END
   LREAD_FILE:  ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
-  LREAD_STDIN: ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_STDIN                ◊ →LSWITCH_END
+  LREAD_STDIN: ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FD FIO∆STDIN         ◊ →LSWITCH_END
   LSWITCH_END:
 
 LABORT:
