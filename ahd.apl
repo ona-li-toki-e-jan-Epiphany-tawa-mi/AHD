@@ -18,6 +18,12 @@
 
 
 
+⍝ TODO Have read in only parts of files at a time.
+⍝ TODO Fix shebang stuff (see test.apl.)
+⍝ TODO Improve documenation.
+
+
+
 ⍝ ⎕FIO functions abstraction layer.
 ⊣ ⍎")COPY_ONCE fio.apl"
 

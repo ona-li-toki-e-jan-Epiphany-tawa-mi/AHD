@@ -39,6 +39,8 @@
 
 ⍝ The path to the apl interpreter used to call this program.
 ARGS∆APL_PATH←⍬
+⍝ The name of this file/program.
+ARGS∆PROGRAM_NAME←⍬
 ⍝ The action/subcommand to preform.
 ARGS∆ACTION←⍬
 ⍝ The names of the examples folder.
@@ -51,8 +53,8 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
-  ⍞←"  ./test.apl (record|test) EXAMPLES RECORDINGS\n"
-  ⍞←"  ./apl --script test.apl -- (record|test) EXAMPLES RECORDINGS\n"
+  ⍞←"  ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
+  ⍞←"  ",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
   ⍞←"\n"
   ⍞←"record:\n"
   ⍞←"  Run AHD on the files in the EXAMPLES directory and record the output into\n"
@@ -71,6 +73,7 @@ ARGS∆RECORDINGS_FOLDER←⍬
   ⍝ ARGUMENTS looks like "<apl path> --script <script> -- [user arguments...]"
 
   ARGS∆APL_PATH←↑ARGUMENTS[1]
+  ARGS∆PROGRAM_NAME←↑ARGUMENTS[3]
 
   ⍝ 4 for APL and it's arguments.
   ⍝ 3 for user arguments.
