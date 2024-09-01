@@ -1,4 +1,4 @@
-#!/usr/bin/apl --script --
+#!/usr/local/bin/apl --script
 
 ⍝ This file is part of AHD.
 ⍝
@@ -67,19 +67,21 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ∇
 
 ⍝ Parses command line arguments and updates ARGS∆* accordingly.
-∇ARGS∆PARSE_ARGS ARGUMENTS; USER_ARGUMENTS
+∇ARGS∆PARSE_ARGS ARGUMENTS
+  ⍝ ARGUMENTS looks like "<apl path> --script <script> -- [user arguments...]"
+
   ARGS∆APL_PATH←↑ARGUMENTS[1]
 
-  ⍝ ⎕ARG looks like "apl --script <script> --" plus whatever the user put.
+  ⍝ 4 for APL and it's arguments.
+  ⍝ 3 for user arguments.
   →((3+4)≤≢ARGUMENTS) ⍴ LSUFFICIENT_ARGUMENTS
     ARGS∆DISPLAY_HELP
     ⍞←"\n" ◊ PANIC "insufficient arguments"
   LSUFFICIENT_ARGUMENTS:
 
-  USER_ARGUMENTS←4↓ARGUMENTS
-  ARGS∆ACTION           ←↑USER_ARGUMENTS ◊ USER_ARGUMENTS←1↓USER_ARGUMENTS
-  ARGS∆EXAMPLES_FOLDER  ←↑USER_ARGUMENTS ◊ USER_ARGUMENTS←1↓USER_ARGUMENTS
-  ARGS∆RECORDINGS_FOLDER←↑USER_ARGUMENTS
+  ARGS∆ACTION←↑ARGUMENTS[5]
+  ARGS∆EXAMPLES_FOLDER←↑ARGUMENTS[6]
+  ARGS∆RECORDINGS_FOLDER←↑ARGUMENTS[7]
 
   →((⊂ARGS∆ACTION)∊"record" "test") ⍴ LVALID_ACTION
     ARGS∆DISPLAY_HELP
