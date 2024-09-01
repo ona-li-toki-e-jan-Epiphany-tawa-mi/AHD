@@ -104,9 +104,13 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
 ∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD
-  ⍝ TODO check if popen failed.
   AHD_FD←FIO∆POPEN_READ ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ARGUMENTS
+  →(0≢AHD_FD) ⍴ LSUCCESS
+    PANIC "failed to launch AHD"
+  LSUCCESS:
+
   OUTPUT←FIO∆READ_ENTIRE_FD AHD_FD
+
   ⊣ FIO∆PCLOSE AHD_FD
 ∇
 
@@ -114,9 +118,13 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ⍝ →FILE_PATH - the file.
 ⍝ →BYTE_VECTOR - the data.
 ∇BYTE_VECTOR WRITE_FILE FILE_PATH; FILE_DESCRIPTOR
-  ⍝ TODO check if fopen failed.
   FILE_DESCRIPTOR←"w" FIO∆FOPEN FILE_PATH
+  →(0≢FILE_DESCRIPTOR) ⍴ LSUCCESS
+    PANIC "failed to open file '",FILE_PATH,"' for writing"
+  LSUCCESS:
+
   ⊣ BYTE_VECTOR FIO∆FWRITE FILE_DESCRIPTOR
+
   ⊣ FIO∆FCLOSE FILE_DESCRIPTOR
 ∇
 
