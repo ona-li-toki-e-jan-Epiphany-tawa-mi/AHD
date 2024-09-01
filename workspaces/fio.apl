@@ -45,7 +45,7 @@ FIO⍙metadata←↑,/ (⍪"Author" "BugEmail" "Documentation" "Download" "LICEN
 ⍝ Opens a file with fopen.
 ⍝ →⍺ - mode (i.e. "w", "r+", etc..)
 ⍝ →⍵ - file path.
-⍝ ←The file descriptor, or a scalar 0 on failure.
+⍝ ←The file descriptor, or a scalar number less than 1 on failure.
 FIO∆FOPEN←{⍺ ⎕FIO[3] ⍵}
 
 ⍝ Ze ←    ⎕FIO[ 4] Bh    fclose(Bh)
