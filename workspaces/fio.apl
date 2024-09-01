@@ -72,6 +72,13 @@ FIO∆FEOF←{⎕FIO[10] ⍵}
 ⍝ Returns non-zero if an error ocurred reading file descriptor.
 FIO∆FERROR←{⎕FIO[11] ⍵}
 
+⍝ Zi ← Ac ⎕FIO[23] Bh    fwrite(Ac, 1, ⍴Ac, Bh) 1 Unicode per Ac, Output UTF8
+⍝ Writes a characte vector to a file descriptor.
+⍝ →⍵ - file descriptor.
+⍝ →⍺ - characte vector.
+⍝ ←Error code.
+FIO∆FWRITE_CVECTOR←{⍺ ⎕FIO[23] ⍵}
+
 ⍝ Zh ← As ⎕FIO[24] Bs    popen(Bs, As) command Bs mode As
 ⍝ Stars the given command in a subprocess.
 ⍝ →⍵ - command.

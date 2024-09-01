@@ -26,12 +26,12 @@
 ⍝ TODO use '⊣ MESSAGE ⎕FIO[23] 2' (where 2 ≡ stderr)
 ⍝ Displays an error message.
 ∇ERROR MESSAGE
-  ⎕←"error: ",MESSAGE
+  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "error: ",MESSAGE
 ∇
 
 ⍝ Displays an error message and exits.
 ∇PANIC MESSAGE
-  ⎕←"fatal: ",MESSAGE
+  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "fatal: ",MESSAGE
   ⍎")OFF"
 ∇
 
@@ -63,9 +63,8 @@ ARGS∆RECORDINGS_FOLDER←⍬
   ⍞←"test:\n"
   ⍞←"  Run AHD on the files in the EXAMPLES directory compare their output to\n"
   ⍞←"  files created by record in the RECORDINGS directory. If the outputs differ,\n"
-  ⍞←"  error message will be printed out. I couldn't get exit error codes or\n"
-  ⍞←"  stderr printing working right (GnuAPL amirite?,) so some parsing will be\n"
-  ⍞←"  required."
+  ⍞←"  error message will be printed out on stderr. I couldn't get exit error codes\n"
+  ⍞←"  working right (GnuAPL amirite?,) so some external logic will be required."
 ∇
 
 ⍝ Parses command line arguments and updates ARGS∆* accordingly.
@@ -155,6 +154,7 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
   →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
     PANIC "unreachable"
+  ⍝ TODO make recordings directory if it doesn't exist.
   LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES
   LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES
 ∇
