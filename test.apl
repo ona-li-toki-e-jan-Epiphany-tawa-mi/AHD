@@ -102,8 +102,11 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ⍝ Spawns an instance of AHD.
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
-∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD
-  AHD_FD←FIO∆POPEN_READ ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ARGUMENTS
+∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD;COMMAND
+  COMMAND←ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ARGUMENTS
+  ⍞←"Running '",COMMAND,"'\n"
+
+  AHD_FD←FIO∆POPEN_READ COMMAND
   →(0≢AHD_FD) ⍴ LSUCCESS
     PANIC "failed to launch AHD"
   LSUCCESS:
@@ -129,7 +132,7 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
 ⍝ Performs the "record" action of this testing script, running AHD and recording
 ⍝ the results.
-⍝ →FILENAME - the file to record.
+⍝ →FILENAME - the file in the examples directory to record.
 ∇RECORD FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE;RECORDING_FILE_HEX;RECORDING_FILE_C_CODE
   EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
   RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
