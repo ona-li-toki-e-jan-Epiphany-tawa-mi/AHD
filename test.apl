@@ -23,7 +23,6 @@
 
 
 
-⍝ TODO use '⊣ MESSAGE ⎕FIO[23] 2' (where 2 ≡ stderr)
 ⍝ Displays an error message.
 ∇ERROR MESSAGE
   ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "error: ",MESSAGE
@@ -56,15 +55,20 @@ ARGS∆RECORDINGS_FOLDER←⍬
   ⍞←"  ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
   ⍞←"  ",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
   ⍞←"\n"
-  ⍞←"record:\n"
+  ⍞←"Subcommand record:\n"
   ⍞←"  Run AHD on the files in the EXAMPLES directory and record the output into\n"
   ⍞←"  files in the RECORDINGS directory, overwriting existing files.\n"
   ⍞←"\n"
-  ⍞←"test:\n"
+  ⍞←"  Note that the RECORDINGS directory will not be created if it doesn't exist.\n"
+  ⍞←"\n"
+  ⍞←"Subcommand test:\n"
   ⍞←"  Run AHD on the files in the EXAMPLES directory compare their output to\n"
   ⍞←"  files created by record in the RECORDINGS directory. If the outputs differ,\n"
   ⍞←"  error message will be printed out on stderr. I couldn't get exit error codes\n"
-  ⍞←"  working right (GnuAPL amirite?,) so some external logic will be required."
+  ⍞←"  working right (GnuAPL amirite?,) so some external logic will be required.\n"
+  ⍞←"\n"
+  ⍞←"Note: this tool will not recurse through directories, so all files must be at\n"
+  ⍞←"the top-level of the supplied directories."
 ∇
 
 ⍝ Parses command line arguments and updates ARGS∆* accordingly.
@@ -193,7 +197,6 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
   →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
     PANIC "unreachable"
-  ⍝ TODO make recordings directory if it doesn't exist or throw error.
   LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES ◊ →LSWITCH_END
   LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES   ◊ →LSWITCH_END
   LSWITCH_END:
