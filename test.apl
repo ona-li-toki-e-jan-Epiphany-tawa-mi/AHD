@@ -25,12 +25,12 @@
 
 ⍝ Displays an error message.
 ∇ERROR MESSAGE
-  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "error: ",MESSAGE
+  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "error: ",MESSAGE,"\n"
 ∇
 
 ⍝ Displays an error message and exits.
 ∇PANIC MESSAGE
-  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "fatal: ",MESSAGE
+  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "fatal: ",MESSAGE,"\n"
   ⍎")OFF"
 ∇
 
