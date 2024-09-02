@@ -16,6 +16,7 @@
 ⍝ You should have received a copy of the GNU General Public License along with
 ⍝ AHD. If not, see <https://www.gnu.org/licenses/>.
 
+⍝ AHD integration testing script.
 
 
 ⍝ ⎕FIO functions abstraction layer.

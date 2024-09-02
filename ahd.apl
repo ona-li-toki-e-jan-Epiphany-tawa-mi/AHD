@@ -16,6 +16,8 @@
 ⍝ You should have received a copy of the GNU General Public License along with
 ⍝ AHD. If not, see <https://www.gnu.org/licenses/>.
 
+⍝ AHD - A HexDuper. Hex dump utility.
+
 
 
 ⍝ TODO Have read in only parts of files at a time.
