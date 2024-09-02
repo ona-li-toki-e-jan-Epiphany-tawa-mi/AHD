@@ -13,9 +13,28 @@ development enviroment.
 
 Then, run one of the following commands to get started:
 
-```
+```sh
 ./ahd.apl +h
 apl --script ahd.apl -- +h
+```
+
+## How to run tests
+
+Get the dependencies as specified in the `How to run` section.
+
+Then, run one of the following commands:
+
+```sh
+./test.apl -- test examples recordings
+apl --script test.apl -- test examples recordings
+```
+
+If breaking changes are desired, regenerate the test cases with one of the
+following commands:
+
+```sh
+./test.apl -- record examples recordings
+apl --script test.apl -- record examples recordings
 ```
 
 ## How to install
