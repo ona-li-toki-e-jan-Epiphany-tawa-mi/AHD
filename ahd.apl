@@ -72,7 +72,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
 ⍝ Displays the version and exits.
 ∇ARGS∆DISPLAY_VERSION
-  ⍞←"ahd 0.1.3"
+  ⍞←"ahd 0.1.4"
 ∇
 
 ⍝ Enables the code generator and tries to and set it to use the given language.
