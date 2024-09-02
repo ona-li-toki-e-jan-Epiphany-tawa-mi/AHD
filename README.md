@@ -14,7 +14,7 @@ development enviroment.
 Then, run one of the following commands to get started:
 
 ```sh
-./ahd.apl +h
+./ahd.apl -- +h
 apl --script ahd.apl -- +h
 ```
 
