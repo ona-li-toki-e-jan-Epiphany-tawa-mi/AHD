@@ -103,6 +103,85 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
 
 
+⍝ Opens, truncates, and writes data to a file.
+⍝ →FILE_PATH - the file.
+⍝ →BYTE_VECTOR - the data.
+∇BYTE_VECTOR WRITE_FILE FILE_PATH; FILE_DESCRIPTOR
+  ⍞←"Writing to '",FILE_PATH,"'\n"
+
+  FILE_DESCRIPTOR←"w" FIO∆FOPEN FILE_PATH
+  →(0<FILE_DESCRIPTOR) ⍴ LSUCCESS
+    PANIC "failed to open file '",FILE_PATH,"' for writing"
+  LSUCCESS:
+  ⊣ BYTE_VECTOR FIO∆FWRITE FILE_DESCRIPTOR
+
+  ⊣ FIO∆FCLOSE FILE_DESCRIPTOR
+∇
+
+⍝ Performs an individual recording of a file.
+⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the example file path, 2 - the
+⍝ recording destination file path.
+⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
+∇ARGUMENTS RUN_RECORD FILE_PATHS; EXAMPLE_FILE;RECORDING_FILE
+  EXAMPLE_FILE←↑FILE_PATHS[1]
+  RECORDING_FILE←↑FILE_PATHS[2]
+  ⍞←"Recording ",EXAMPLE_FILE," -> ",RECORDING_FILE,"\n"
+
+  RECORDING_FILE WRITE_FILE⍨ RUN_AHD ARGUMENTS,⊂EXAMPLE_FILE
+∇
+
+⍝ Performs the "record" action of this testing script, running AHD and recording
+⍝ the results.
+⍝ →FILENAME - the file in the examples directory to record.
+∇RECORD FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE
+  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
+  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
+
+  ⍝ Records hexdump.
+  ⍬ RUN_RECORD EXAMPLE_FILE (RECORDING_FILE_BASE,".hex")
+  ⍝ Records c code generator output.
+  "+c" "c" RUN_RECORD EXAMPLE_FILE (RECORDING_FILE_BASE,".h")
+∇
+
+
+
+⍝ Performs an individual testing of a file.
+⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the example file path, 2 - the
+⍝ recording file path.
+⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
+∇ARGUMENTS RUN_TEST FILE_PATHS; EXAMPLE_FILE;RECORDING_FILE;EXPECTED_RESULT
+  EXAMPLE_FILE←↑FILE_PATHS[1]
+  RECORDING_FILE←↑FILE_PATHS[2]
+  ⍞←"Testing ",EXAMPLE_FILE," -> ",RECORDING_FILE,"\n"
+
+  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE RECORDING_FILE
+  →(¯2≢EXPECTED_RESULT) ⍴ LREAD_SUCCESS
+    PANIC "unable to read file '",RECORDING_FILE,"'"
+  LREAD_SUCCESS:
+
+  →(EXPECTED_RESULT≡ RUN_AHD ARGUMENTS,⊂EXAMPLE_FILE) ⍴ LTEST_PASS
+    ERROR "output from AHD on '",EXAMPLE_FILE,"' differs from contents of '",RECORDING_FILE,"'"
+    →LTEST_END
+  LTEST_PASS:
+    ⍞←"Test passed\n" ◊ →LTEST_END
+  LTEST_END:
+∇
+
+⍝ TODO Output line contents for user to see.
+⍝ Performs the "test" action of this testing script, running AHD and comparing
+⍝ the results to what was previously recorded.
+⍝ →FILENAME - the file in the examples directory to test.
+∇TEST FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE
+  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
+  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
+
+  ⍝ Tests hexdump.
+  ⍬ RUN_TEST EXAMPLE_FILE (RECORDING_FILE_BASE,".hex")
+  ⍝ Tests c code generator output.
+  "+c" "c" RUN_TEST EXAMPLE_FILE (RECORDING_FILE_BASE,".h")
+∇
+
+
 ⍝ Spawns an instance of AHD.
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
@@ -118,78 +197,6 @@ ARGS∆RECORDINGS_FOLDER←⍬
   OUTPUT←FIO∆READ_ENTIRE_FD AHD_FD
 
   ⊣ FIO∆PCLOSE AHD_FD
-∇
-
-⍝ Opens, truncates, and writes data to a file.
-⍝ →FILE_PATH - the file.
-⍝ →BYTE_VECTOR - the data.
-∇BYTE_VECTOR WRITE_FILE FILE_PATH; FILE_DESCRIPTOR
-  FILE_DESCRIPTOR←"w" FIO∆FOPEN FILE_PATH
-  →(0<FILE_DESCRIPTOR) ⍴ LSUCCESS
-    PANIC "failed to open file '",FILE_PATH,"' for writing"
-  LSUCCESS:
-
-  ⊣ BYTE_VECTOR FIO∆FWRITE FILE_DESCRIPTOR
-
-  ⊣ FIO∆FCLOSE FILE_DESCRIPTOR
-∇
-
-⍝ Performs the "record" action of this testing script, running AHD and recording
-⍝ the results.
-⍝ →FILENAME - the file in the examples directory to record.
-∇RECORD FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE;RECORDING_FILE_HEX;RECORDING_FILE_C_CODE
-  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
-  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
-
-  ⍝ Records hexdump.
-  RECORDING_FILE_HEX←RECORDING_FILE_BASE,".hex"
-  ⍞←"Recording ",EXAMPLE_FILE," -> ",RECORDING_FILE_HEX,"\n"
-  RECORDING_FILE_HEX WRITE_FILE⍨ RUN_AHD ⊂EXAMPLE_FILE
-
-  ⍝ Records c code generator output.
-  RECORDING_FILE_C_CODE←RECORDING_FILE_BASE,".h"
-  ⍞←"Recording ",EXAMPLE_FILE," -> ",RECORDING_FILE_C_CODE," with '+c c'\n"
-  RECORDING_FILE_C_CODE WRITE_FILE⍨ RUN_AHD "+c c" EXAMPLE_FILE
-∇
-
-⍝ TODO Factor out code.
-⍝ TODO Output line contents for user to see.
-⍝ Performs the "test" action of this testing script, running AHD and comparing
-⍝ the results to what was previously recorded.
-⍝ →FILENAME - the file in the examples directory to test.
-∇TEST FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE;RECORDING_FILE_HEX;RECORDING_FILE_C_CODE;RESULT;EXPECTED_RESULT
-  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
-  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
-
-  ⍝ Tests hexdump.
-  RECORDING_FILE_HEX←RECORDING_FILE_BASE,".hex"
-  ⍞←"Testing ",EXAMPLE_FILE," -> ",RECORDING_FILE_HEX,"\n"
-  RESULT←RUN_AHD ⊂EXAMPLE_FILE
-  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE RECORDING_FILE_HEX
-  →(¯2≢EXPECTED_RESULT) ⍴ LHEX_RECORDING_READ_SUCCESS
-    PANIC "unable to read file '",EXPECTED_RESULT,"'"
-  LHEX_RECORDING_READ_SUCCESS:
-  →(RESULT≡EXPECTED_RESULT) ⍴ LHEX_TEST_SUCCESS
-    ERROR "hex dump of '",EXAMPLE_FILE,"' differs from contents of '",RECORDING_FILE_HEX,"'"
-    →LHEX_TEST_END
-  LHEX_TEST_SUCCESS:
-    ⍞←"Test passed\n" ◊ →LHEX_TEST_END
-  LHEX_TEST_END:
-
-  ⍝ Tests c code generator output.
-  RECORDING_FILE_C_CODE←RECORDING_FILE_BASE,".h"
-  ⍞←"Testing ",EXAMPLE_FILE," -> ",RECORDING_FILE_C_CODE," with '+c c'\n"
-  RESULT←RUN_AHD "+c c" EXAMPLE_FILE
-  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE RECORDING_FILE_C_CODE
-  →(¯2≢EXPECTED_RESULT) ⍴ LC_CODE_RECORDING_READ_SUCCESS
-    PANIC "unable to read file '",EXPECTED_RESULT,"'"
-  LC_CODE_RECORDING_READ_SUCCESS:
-  →(RESULT≡EXPECTED_RESULT) ⍴ LC_CODE_TEST_SUCCESS
-    ERROR "generated C code of '",EXAMPLE_FILE,"' differs from contents of '",RECORDING_FILE_C_CODE,"'"
-    →LC_CODE_TEST_END
-  LC_CODE_TEST_SUCCESS:
-    ⍞←"Test passed\n" ◊ →LC_CODE_TEST_END
-  LC_CODE_TEST_END:
 ∇
 
 ∇MAIN
