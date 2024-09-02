@@ -19,21 +19,9 @@
 ⍝ AHD integration testing script.
 
 
-⍝ ⎕FIO functions abstraction layer.
+
 ⊣ ⍎")COPY_ONCE fio.apl"
-
-
-
-⍝ Displays an error message.
-∇ERROR MESSAGE
-  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "error: ",MESSAGE,"\n"
-∇
-
-⍝ Displays an error message and exits.
-∇PANIC MESSAGE
-  ⊣ FIO∆STDERR FIO∆FWRITE_CVECTOR⍨ "fatal: ",MESSAGE,"\n"
-  ⍎")OFF"
-∇
+⊣ ⍎")COPY_ONCE logging.apl"
 
 
 
@@ -205,7 +193,7 @@ ARGS∆RECORDINGS_FOLDER←⍬
   ARGS∆PARSE_ARGS ⎕ARG
 
   →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
-    PANIC "unreachable"
+    PANIC "MAIN: unreachable"
   LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES ◊ →LSWITCH_END
   LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES   ◊ →LSWITCH_END
   LSWITCH_END:
