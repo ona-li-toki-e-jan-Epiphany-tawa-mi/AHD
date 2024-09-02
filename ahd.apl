@@ -21,12 +21,11 @@
 
 
 ⍝ TODO Have read in only parts of files at a time.
-⍝ TODO Improve documenation.
 
 
 
-⍝ ⎕FIO functions abstraction layer.
 ⊣ ⍎")COPY_ONCE fio.apl"
+⊣ ⍎")COPY_ONCE logging.apl"
 
 
 
@@ -36,9 +35,6 @@ ARGS∆APL_PATH←⍬
 ARGS∆PROGRAM_NAME←⍬
 ⍝ A vector of filenames given via the command line.
 ARGS∆FILENAMES←⍬
-⍝ If 1, the program should abort, else 0. This would either be due to an error
-⍝ or a command line argument that serves some other purpose.
-ARGS∆ABORT←0
 ⍝ Whether "++" was encountered, meaning all following option-like arguments are
 ⍝ to be treated as files.
 ARGS∆END_OF_OPTIONS←0
@@ -51,11 +47,10 @@ ARGS∆CODE_GENERATOR_LANGUAGE←⍬
 ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
 ⍝ Displays and error message and exits.
-∇ARGS∆FATAL_ERROR MESSAGE
-  ⍞←"Error: "
-  ⍞←MESSAGE
-  ⍞←"\nTry 'ahd +h' for more information"
-  ARGS∆ABORT←1
+∇ARGS∆PANIC MESSAGE
+  ERROR MESSAGE
+  ⍞←"Try 'ahd +h' for more information"
+  ⍎")OFF"
 ∇
 
 ⍝ Displays help information and exits.
@@ -73,47 +68,36 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍞←"  +c, ++code-generator\n"
   ⍞←"    Outputs code to bake the data into a program. Expects a language as an\n"
   ⍞←"    argument. Supported Languages: c"
-  ARGS∆ABORT←1
 ∇
 
 ⍝ Displays the version and exits.
 ∇ARGS∆DISPLAY_VERSION
   ⍞←"ahd 0.1.3"
-  ARGS∆ABORT←1
 ∇
 
 ⍝ Enables the code generator and tries to and set it to use the given language.
 ∇ARGS∆SET_CODE_GENERATOR_LANGUAGE LANGUAGE
   →("c"≡LANGUAGE) ⍴ LKNOWN_LANGUAGE
-    ARGS∆FATAL_ERROR "language '",LANGUAGE,"' does not support code generation"
-    ARGS∆ABORT←1 ◊ →LABORT
+    ARGS∆PANIC "language '",LANGUAGE,"' does not support code generation"
   LKNOWN_LANGUAGE:
 
   ARGS∆CODE_GENERATOR_LANGUAGE←LANGUAGE
   ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
-
-LABORT:
 ∇
 
-⍝ Parses a single character option (anything aftoptioner a "+") and updates ARGS∆*
-⍝ accordingly.
+⍝ Parses a single character option (anything after a single "+") and updates
+⍝ ARGS∆* accordingly.
 ∇ARGS∆PARSE_SHORT_OPTION OPTION
-  →ARGS∆ABORT ⍴ LABORT
-
   →({OPTION≡⍵}¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
-  LDEFAULT:        ARGS∆FATAL_ERROR "unknown option '+",OPTION,"'" ◊ →LSWITCH_END
-  LHELP:           ARGS∆DISPLAY_HELP                               ◊ →LSWITCH_END
-  LVERSION:        ARGS∆DISPLAY_VERSION                            ◊ →LSWITCH_END
+  LDEFAULT:        ARGS∆PANIC "unknown option '+",OPTION,"'"       ◊ →LSWITCH_END
+  LHELP:           ARGS∆DISPLAY_HELP    ◊ ⍎")OFF"                  ◊ →LSWITCH_END
+  LVERSION:        ARGS∆DISPLAY_VERSION ◊ ⍎")OFF"                  ◊ →LSWITCH_END
   LCODE_GENERATOR: ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1           ◊ →LSWITCH_END
   LSWITCH_END:
-
-LABORT:
 ∇
 
 ⍝ Parses a command line argument and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARG ARGUMENT
-  →ARGS∆ABORT ⍴ LABORT
-
   ⍝ If "++" was encountered, we just treat everything as a file.
   →ARGS∆END_OF_OPTIONS ⍴ LFILE
   ⍝ Handles arguments to options with arguments.
@@ -131,7 +115,7 @@ LABORT:
     ⍝ Anything leftover is a file.
     ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
     →LSWITCH_END
-  LINVALID_LONG_OPTION: ARGS∆FATAL_ERROR "unknown option '",ARGUMENT,"'" ◊ →LSWITCH_END
+  LINVALID_LONG_OPTION: ARGS∆PANIC "unknown option '",ARGUMENT,"'"       ◊ →LSWITCH_END
   LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT              ◊ →LSWITCH_END
   LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                            ◊ →LSWITCH_END
   LSET_CODE_GENERATOR_LANGUAGE:
@@ -141,8 +125,6 @@ LABORT:
   LVERSION:             ARGS∆DISPLAY_VERSION                             ◊ →LSWITCH_END
   LCODE_GENERATOR:      ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1            ◊ →LSWITCH_END
   LSWITCH_END:
-
-LABORT:
 ∇
 
 ⍝ Parses command line arguments and updates ARGS∆* accordingly.
@@ -151,20 +133,14 @@ LABORT:
 
   ARGS∆APL_PATH←↑ARGUMENTS[1]
   ARGS∆PROGRAM_NAME←↑ARGUMENTS[3]
-
   →(4≥≢ARGUMENTS) ⍴ LNO_ARGUMENTS
     ARGS∆PARSE_ARG¨ 4↓ARGUMENTS
   LNO_ARGUMENTS:
 
-  →ARGS∆ABORT ⍴ LABORT
-
   ⍝ Tests for any options with arguments that were not supplied an argument.
   →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
-    ARGS∆FATAL_ERROR "options '+c' and '++code-generator' expect an argument"
-    →LABORT
+    ARGS∆PANIC "options '+c' and '++code-generator' expect an argument"
   LNO_INVALID_OPTIONS:
-
-LABORT:
 ∇
 
 
@@ -255,28 +231,25 @@ IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
   LDONT_PRINT_FILENAME:
 
   →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
-    ⍞←"Error: failed to open file"
-    →LABORT
+    ERROR "failed to open file" ◊ →LREAD_ERROR
   LNO_READ_ERROR:
 
   ⍝ If a code generator is selected, we use that, else we just do a hexdump.
   →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
   LDEFAULT:
     →(0≡≢ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LNO_SET_LANGUAGE
-      ⍞←"Error: HANDLE_FILE: unexpected code generator language '",ARGS∆CODE_GENERATOR_LANGUAGE,"'"
-      →LABORT
+      PANIC "HANDLE_FILE: unreachable"
     LNO_SET_LANGUAGE:
     HEXDUMP BYTE_VECTOR ◊ →LSWITCH_END
   LGENERATE_C: GENERATE_C BYTE_VECTOR ◊ →LSWITCH_END
   LSWITCH_END:
 
-LABORT:
+LREAD_ERROR:
   IGNORE←⍬
 ∇
 
 ∇MAIN
   ARGS∆PARSE_ARGS ⎕ARG
-  →ARGS∆ABORT ⍴ LABORT
 
   →(0≡≢ARGS∆FILENAMES) ⍴ LREAD_STDIN
   →(1≡≢ARGS∆FILENAMES) ⍴ LREAD_FILE
@@ -287,8 +260,6 @@ LABORT:
   LREAD_FILE:  ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
   LREAD_STDIN: ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FD FIO∆STDIN         ◊ →LSWITCH_END
   LSWITCH_END:
-
-LABORT:
 ∇
 MAIN
 
