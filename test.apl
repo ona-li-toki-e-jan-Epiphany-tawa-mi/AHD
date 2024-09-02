@@ -157,9 +157,10 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
   →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
     PANIC "unreachable"
-  ⍝ TODO make recordings directory if it doesn't exist.
-  LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES
-  LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES
+  ⍝ TODO make recordings directory if it doesn't exist or throw error.
+  LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES ◊ →LSWITCH_END
+  LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES   ◊ →LSWITCH_END
+  LSWITCH_END:
 ∇
 MAIN
 
