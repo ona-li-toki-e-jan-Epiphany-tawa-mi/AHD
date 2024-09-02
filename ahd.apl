@@ -1,4 +1,4 @@
-#!/usr/bin/apl --script --
+#!/usr/local/bin/apl --script
 
 ⍝ This file is part of AHD.
 ⍝
@@ -19,7 +19,6 @@
 
 
 ⍝ TODO Have read in only parts of files at a time.
-⍝ TODO Fix shebang stuff (see test.apl.)
 ⍝ TODO Improve documenation.
 
 
@@ -29,6 +28,10 @@
 
 
 
+⍝ The path to the apl interpreter used to call this program.
+ARGS∆APL_PATH←⍬
+⍝ The name of this file/program.
+ARGS∆PROGRAM_NAME←⍬
 ⍝ A vector of filenames given via the command line.
 ARGS∆FILENAMES←⍬
 ⍝ If 1, the program should abort, else 0. This would either be due to an error
@@ -56,9 +59,8 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ Displays help information and exits.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
-  ⍞←"  ahd [options...] [FILE...]\n"
-  ⍞←"  ./ahd.apl [options...] [FILE...]\n"
-  ⍞←"  apl --script ahd.apl -- [options...] [FILE...]\n"
+  ⍞←"  ",ARGS∆PROGRAM_NAME," -- [options...] [FILE...]\n"
+  ⍞←"  ",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- [options...] [FILE...]\n"
   ⍞←"\n"
   ⍞←"Displays FILE contents (or input from stdin if no FILEs were specified) in\n"
   ⍞←"hexidecimal.\n"
@@ -143,7 +145,11 @@ LABORT:
 
 ⍝ Parses command line arguments and updates ARGS∆* accordingly.
 ∇ARGS∆PARSE_ARGS ARGUMENTS
-  ⍝ ⎕ARG looks like "apl --script <script> --" plus whatever the user put.
+  ⍝ ARGUMENTS looks like "apl --script <script> -- [user arguments...]".
+
+  ARGS∆APL_PATH←↑ARGUMENTS[1]
+  ARGS∆PROGRAM_NAME←↑ARGUMENTS[3]
+
   →(4≥≢ARGUMENTS) ⍴ LNO_ARGUMENTS
     ARGS∆PARSE_ARG¨ 4↓ARGUMENTS
   LNO_ARGUMENTS:
