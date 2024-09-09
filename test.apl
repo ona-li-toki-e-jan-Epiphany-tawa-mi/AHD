@@ -31,28 +31,28 @@ ARGS∆APL_PATH←⍬
 ARGS∆PROGRAM_NAME←⍬
 ⍝ The action/subcommand to preform.
 ARGS∆ACTION←⍬
-⍝ The names of the examples folder.
-ARGS∆EXAMPLES_FOLDER←⍬
-⍝ The names of the files in the examples folder.
-ARGS∆EXAMPLES_FILENAMES←⍬
-⍝ The name of the recordings folder.
-ARGS∆RECORDINGS_FOLDER←⍬
+⍝ The path of the sources folder.
+ARGS∆SOURCES_FOLDER←⍬
+⍝ The paths of the files in the sources folder.
+ARGS∆SOURCES_FILENAMES←⍬
+⍝ The name of the outputs folder.
+ARGS∆OUTPUTS_FOLDER←⍬
 
 ⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
-  ⍞←"  ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
-  ⍞←"  ",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- (record|test) EXAMPLES RECORDINGS\n"
+  ⍞←"  ",ARGS∆PROGRAM_NAME," -- (record|test) SOURCES OUTPUTS\n"
+  ⍞←"  ",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- (record|test) SOURCES OUTPUTS\n"
   ⍞←"\n"
   ⍞←"Subcommand record:\n"
-  ⍞←"  Run AHD on the files in the EXAMPLES directory and record the output into\n"
-  ⍞←"  files in the RECORDINGS directory, overwriting existing files.\n"
+  ⍞←"  Run AHD on the files in the SOURCES directory and record the output into\n"
+  ⍞←"  files in the OUTPUTS directory, overwriting existing files.\n"
   ⍞←"\n"
-  ⍞←"  Note that the RECORDINGS directory will not be created if it doesn't exist.\n"
+  ⍞←"  Note that the OUTPUTS directory will not be created if it doesn't exist.\n"
   ⍞←"\n"
   ⍞←"Subcommand test:\n"
-  ⍞←"  Run AHD on the files in the EXAMPLES directory compare their output to\n"
-  ⍞←"  files created by record in the RECORDINGS directory. If the outputs differ,\n"
+  ⍞←"  Run AHD on the files in the SOURCES directory compare their output to\n"
+  ⍞←"  files created by record in the OUTPUTS directory. If the outputs differ,\n"
   ⍞←"  error message will be printed out on stderr. I couldn't get exit error codes\n"
   ⍞←"  working right (GnuAPL amirite?,) so some external logic will be required.\n"
   ⍞←"\n"
@@ -75,19 +75,19 @@ ARGS∆RECORDINGS_FOLDER←⍬
   LSUFFICIENT_ARGUMENTS:
 
   ARGS∆ACTION←↑ARGUMENTS[5]
-  ARGS∆EXAMPLES_FOLDER←↑ARGUMENTS[6]
-  ARGS∆RECORDINGS_FOLDER←↑ARGUMENTS[7]
+  ARGS∆SOURCES_FOLDER←↑ARGUMENTS[6]
+  ARGS∆OUTPUTS_FOLDER←↑ARGUMENTS[7]
 
   →((⊂ARGS∆ACTION)∊"record" "test") ⍴ LVALID_ACTION
     ARGS∆DISPLAY_HELP
     ⍞←"\n" ◊ PANIC "invalid action '",ARGS∆ACTION,"'"
   LVALID_ACTION:
 
-  ⍝ Checks if examples folder exists and gets filenames.
-  ARGS∆EXAMPLES_FILENAMES←FIO∆LIST_DIRECTORY ARGS∆EXAMPLES_FOLDER
-  →(¯2≢ARGS∆EXAMPLES_FILENAMES) ⍴ LEXAMPLES_FOLDER_EXISTS
-    PANIC "examples folder '",ARGS∆EXAMPLES_FOLDER,"' does not exist"
-  LEXAMPLES_FOLDER_EXISTS:
+  ⍝ Checks if sources folder exists and gets filenames.
+  ARGS∆SOURCES_FILENAMES←FIO∆LIST_DIRECTORY ARGS∆SOURCES_FOLDER
+  →(¯2≢ARGS∆SOURCES_FILENAMES) ⍴ LSOURCES_FOLDER_EXISTS
+    PANIC "sources folder '",ARGS∆SOURCES_FOLDER,"' does not exist"
+  LSOURCES_FOLDER_EXISTS:
 ∇
 
 
@@ -108,48 +108,48 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ∇
 
 ⍝ Performs an individual recording of a file.
-⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the example file path, 2 - the
-⍝ recording destination file path.
+⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the source file path, 2 - the
+⍝ output destination file path.
 ⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
-∇ARGUMENTS RUN_RECORD FILE_PATHS; EXAMPLE_FILE;RECORDING_FILE
-  EXAMPLE_FILE←↑FILE_PATHS[1]
-  RECORDING_FILE←↑FILE_PATHS[2]
-  ⍞←"Recording ",EXAMPLE_FILE," -> ",RECORDING_FILE,"\n"
+∇ARGUMENTS RUN_RECORD FILE_PATHS; SOURCE_FILE;RECORDING_FILE
+  SOURCE_FILE←↑FILE_PATHS[1]
+  OUTPUT_FILE←↑FILE_PATHS[2]
+  ⍞←"Recording ",SOURCE_FILE," -> ",OUTPUT_FILE,"\n"
 
-  RECORDING_FILE WRITE_FILE⍨ RUN_AHD ARGUMENTS,⊂EXAMPLE_FILE
+  OUTPUT_FILE WRITE_FILE⍨ RUN_AHD ARGUMENTS,⊂SOURCE_FILE
 ∇
 
 ⍝ Performs the "record" action of this testing script, running AHD and recording
 ⍝ the results.
-⍝ →FILENAME - the file in the examples directory to record.
-∇RECORD FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE
-  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
-  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
+⍝ →FILENAME - the file in the sources directory to record.
+∇RECORD FILENAME; SOURCE_FILE;OUTPUT_FILE_BASE
+  SOURCE_FILE←ARGS∆SOURCES_FOLDER,"/",FILENAME
+  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER,"/",FILENAME
 
   ⍝ Records hexdump.
-  ⍬ RUN_RECORD EXAMPLE_FILE (RECORDING_FILE_BASE,".hex")
+  ⍬ RUN_RECORD SOURCE_FILE (OUTPUT_FILE_BASE,".hex")
   ⍝ Records c code generator output.
-  "+c" "c" RUN_RECORD EXAMPLE_FILE (RECORDING_FILE_BASE,".h")
+  "+c" "c" RUN_RECORD SOURCE_FILE (OUTPUT_FILE_BASE,".h")
 ∇
 
 
 
 ⍝ Performs an individual testing of a file.
-⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the example file path, 2 - the
-⍝ recording file path.
+⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the source file path, 2 - the
+⍝ output file path.
 ⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
-∇ARGUMENTS RUN_TEST FILE_PATHS; EXAMPLE_FILE;RECORDING_FILE;EXPECTED_RESULT
-  EXAMPLE_FILE←↑FILE_PATHS[1]
-  RECORDING_FILE←↑FILE_PATHS[2]
-  ⍞←"Testing ",EXAMPLE_FILE," -> ",RECORDING_FILE,"\n"
+∇ARGUMENTS RUN_TEST FILE_PATHS; SOURCE_FILE;OUTPUT_FILE;EXPECTED_RESULT
+  SOURCE_FILE←↑FILE_PATHS[1]
+  OUTPUT_FILE←↑FILE_PATHS[2]
+  ⍞←"Testing ",SOURCE_FILE," -> ",OUTPUT_FILE,"\n"
 
-  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE RECORDING_FILE
+  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
   →(¯2≢EXPECTED_RESULT) ⍴ LREAD_SUCCESS
-    PANIC "unable to read file '",RECORDING_FILE,"'"
+    PANIC "unable to read file '",OUTPUT_FILE,"'"
   LREAD_SUCCESS:
 
-  →(EXPECTED_RESULT≡ RUN_AHD ARGUMENTS,⊂EXAMPLE_FILE) ⍴ LTEST_PASS
-    ERROR "output from AHD on '",EXAMPLE_FILE,"' differs from contents of '",RECORDING_FILE,"'"
+  →(EXPECTED_RESULT≡ RUN_AHD ARGUMENTS,⊂SOURCE_FILE) ⍴ LTEST_PASS
+    ERROR "output from AHD on '",SOURCE_FILE,"' differs from contents of '",OUTPUT_FILE,"'"
     →LTEST_END
   LTEST_PASS:
     ⍞←"Test passed\n" ◊ →LTEST_END
@@ -159,15 +159,15 @@ ARGS∆RECORDINGS_FOLDER←⍬
 ⍝ TODO Output line contents for user to see.
 ⍝ Performs the "test" action of this testing script, running AHD and comparing
 ⍝ the results to what was previously recorded.
-⍝ →FILENAME - the file in the examples directory to test.
-∇TEST FILENAME; EXAMPLE_FILE;RECORDING_FILE_BASE
-  EXAMPLE_FILE←ARGS∆EXAMPLES_FOLDER,"/",FILENAME
-  RECORDING_FILE_BASE←ARGS∆RECORDINGS_FOLDER,"/",FILENAME
+⍝ →FILENAME - the file in the sources directory to test.
+∇TEST FILENAME; SOURCE_FILE;OUTPUT_FILE_BASE
+  SOURCE_FILE←ARGS∆SOURCES_FOLDER,"/",FILENAME
+  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER,"/",FILENAME
 
   ⍝ Tests hexdump.
-  ⍬ RUN_TEST EXAMPLE_FILE (RECORDING_FILE_BASE,".hex")
+  ⍬ RUN_TEST SOURCE_FILE (OUTPUT_FILE_BASE,".hex")
   ⍝ Tests c code generator output.
-  "+c" "c" RUN_TEST EXAMPLE_FILE (RECORDING_FILE_BASE,".h")
+  "+c" "c" RUN_TEST SOURCE_FILE (OUTPUT_FILE_BASE,".h")
 ∇
 
 
@@ -194,8 +194,8 @@ ARGS∆RECORDINGS_FOLDER←⍬
 
   →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
     PANIC "MAIN: unreachable"
-  LRECORD: RECORD¨ARGS∆EXAMPLES_FILENAMES ◊ →LSWITCH_END
-  LTEST:   TEST¨ARGS∆EXAMPLES_FILENAMES   ◊ →LSWITCH_END
+  LRECORD: RECORD¨ARGS∆SOURCES_FILENAMES ◊ →LSWITCH_END
+  LTEST:   TEST¨ARGS∆SOURCES_FILENAMES   ◊ →LSWITCH_END
   LSWITCH_END:
 ∇
 MAIN
