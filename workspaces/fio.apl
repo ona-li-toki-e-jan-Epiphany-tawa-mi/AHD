@@ -26,7 +26,11 @@
 ⍝ In GnuAPL, interations with the operating system (file handling, spawning
 ⍝ processes, opening ports, etc.) are done with ⎕FIO.
 ⍝ The problem is that the specific command in ⎕FIO is specified with an axis
-⍝ argument (i.e. ⎕FIO[3],) which results in hard-to-read code.
+⍝ argument (i.e. ⎕FIO[3],) which results in hard-to-read code. Additionally,
+⍝ some of the functions are also annoying to use (i.e. ⎕FIO[20], mkdir, requires
+⍝ the file permissions to be converted from octal to decimal numbers before
+⍝ calling.)
+⍝
 ⍝ This file provides a small layer of abstraction to give proper names to the
 ⍝ functions provided by ⎕FIO, and some extra utlities that go along with it.
 ⍝
@@ -37,7 +41,7 @@
 
 ⍝ See <https://www.gnu.org/software/apl/Library-Guidelines-GNU-APL.html> for
 ⍝ details.
-FIO⍙metadata←↑,/ (⍪"Author" "BugEmail" "Documentation" "Download" "LICENSE" "Portability" "Provides" "Requires" "Version") (⍪"ona li toki e jan Epiphany tawa mi" "" "" "" "ZLIB" "L3" "FIO" "" "0.1.0")
+FIO⍙metadata←"Author" "BugEmail" "Documentation" "Download" "LICENSE" "Portability" "Provides" "Requires" "Version",⍪"ona li toki e jan Epiphany tawa mi" "" "" "" "ZLIB" "L3" "FIO" "" "0.1.0"
 
 
 
