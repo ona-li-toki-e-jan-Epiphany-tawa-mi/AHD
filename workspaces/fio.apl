@@ -146,6 +146,13 @@ FIO∆LIST_DIRECTORY←{⎕FIO[29] ⍵}
 ⍝ ←1 if the file path represents a directory, else 0.
 FIO∆IS_DIRECTORY←{¯2≢FIO∆LIST_DIRECTORY ⍵}
 
+⍝ Splits a file path into it's seperate parts and removes the seperators (i.e.
+⍝ FIO∆SPLIT_PATH "../a/p///apples" → ".." "a" "p" "apples"
+FIO∆SPLIT_PATH←{{⍵~'/'}¨⍵⊂⍨1++'/'⍷⍵}
+
+⍝ Joins two file paths together with a seperator.
+FIO∆JOIN_PATHS←{⍺,'/',⍵}
+
 
 
 ⍝ Common file descriptors.
