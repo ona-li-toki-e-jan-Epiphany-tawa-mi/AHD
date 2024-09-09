@@ -75,11 +75,13 @@ FIO∆FREAD_SIZED←{⍺ ⎕FIO[6] ⍵}
 FIO∆FWRITE←{⍺ ⎕FIO[7] ⍵}
 
 ⍝ Zi ←    ⎕FIO[10] Bh    feof(Bh)
-⍝ Returns non-zero if EOF was reached for the file descriptor.
+⍝ →⍵ - file descriptor.
+⍝ ←Non-zero if EOF was reached for the file descriptor.
 FIO∆FEOF←{⎕FIO[10] ⍵}
 
 ⍝ Ze ←    ⎕FIO[11] Bh    ferror(Bh)
-⍝ Returns non-zero if an error ocurred reading file descriptor.
+⍝ →⍵ - file descriptor.
+⍝ ←Non-zero if an error ocurred reading file descriptor.
 FIO∆FERROR←{⎕FIO[11] ⍵}
 
 ⍝ Zi ← Ac ⎕FIO[23] Bh    fwrite(Ac, 1, ⍴Ac, Bh) 1 Unicode per Ac, Output UTF8
@@ -109,8 +111,8 @@ FIO∆PCLOSE←{⎕FIO[25] ⍵}
 ⍝ Reads in the enitrety of the file a byte vector.
 ⍝ →FILE_PATH - file path to read from.
 ⍝ BYTE_VECTOR← - The byte vector, or a scalar ¯2 on failure.
-∇BYTE_VECTOR←FIO∆READ_ENTIRE_FILE FILE_PATH
-  BYTE_VECTOR←⎕FIO[26] FILE_PATH
+∇BYTE_VECTOR←FIO∆READ_ENTIRE_FILE PATH
+  BYTE_VECTOR←⎕FIO[26] PATH
 
   →(¯2≡BYTE_VECTOR) ⍴ LERROR
     ⍝ ⎕FIO[26] actually returns a character vector of the bytes, so ⎕UCS is used
@@ -138,6 +140,11 @@ FIO∆LIST_DIRECTORY←{⎕FIO[29] ⍵}
     →LREAD_LOOP
   LEND_READ_LOOP:
 ∇
+
+⍝ Checks is the file path exists and is a directory.
+⍝ →⍵ - directory file path.
+⍝ ←1 if the file path represents a directory, else 0.
+FIO∆IS_DIRECTORY←{¯2≢FIO∆LIST_DIRECTORY ⍵}
 
 
 
