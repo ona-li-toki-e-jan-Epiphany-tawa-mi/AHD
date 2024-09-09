@@ -57,6 +57,12 @@ FIO∆FCLOSE←{⎕FIO[4] ⍵}
 ⍝ Zb ←    ⎕FIO[ 6] Bh    fread(Zi, 1, 5000, Bh) 1 byte per Zb
 ⍝ Reads up to 5,000 bytes in from the file descriptor as a byte vector.
 FIO∆FREAD←{⎕FIO[6] ⍵}
+⍝ Zb ← Ai ⎕FIO[ 6] Bh    fread(Zi, 1, Ai, Bh) 1 byte per Zb
+⍝ Reads bytes up to specified number of bytes from the file descriptor as a byte
+⍝ vector.
+⍝ →⍵ - file descriptor.
+⍝ →⍺ - maximum number of bytes to read in.
+FIO∆FREAD_SIZED←{⍺ ⎕FIO[6] ⍵}
 
 ⍝ Zi ← Ab ⎕FIO[ 7] Bh    fwrite(Ab, 1, ⍴Ai, Bh) 1 byte per Ai
 ⍝ Writes to a file descriptor.
