@@ -20,10 +20,6 @@
 
 
 
-⍝ TODO Have read in only parts of files at a time.
-
-
-
 ⊣ ⍎")COPY_ONCE fio.apl"
 ⊣ ⍎")COPY_ONCE logging.apl"
 
@@ -151,98 +147,120 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ ←The character vector.
 HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
 
-⍝ Splits a vector into partitions of the specified size. If there is not enough elements
-⍝ left for a full partition, the remaining elements will simply be placed in the
-⍝ last partition.
-⍝ →⍵ - the vector to partition.
-⍝ →⍺ - the size of the paritions.
-SIZED_PARTITION←{⍵⊂⍨(≢⍵)⍴⍺/⍳⌈⍺÷⍨≢⍵}
-
-
-
-⍝ The number of digits to use to print the line's byte offset.
-OFFSET_DIGITS←7
-⍝ The number of hexidecimal digits needed to represent a byte.
-BYTE_DIGITS←2
-⍝ The number of bytes to print out per line.
-BYTES_PER_LINE←16
-⍝ The bvte-value of a space character.
-SPACE_BYTE←⎕UCS ' '
-
 ⍝ Returns whether the given byte is a displayable, non-control ASCII character.
 ⍝ →⍵ - a byte.
 ⍝ ←1 if the byte matches the criteria, else 0.
 IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
 
+
+⍝ The bvte-value of a space character.
+SPACE_BYTE←⎕UCS ' '
+
+
+
+⍝ The number of bytes to print out per line.
+HEXDUMP_BYTES_PER_LINE←16
+⍝ The number of hexidecimal digits needed to represent a byte.
+HEXDUMP_BYTE_DIGITS←2
+
 ⍝ Prints out a line of hexdump output of the byte vector.
 ⍝ →BYTE_VECTOR - the byte vector.
 ⍝ →OFFSET - the current line's byte offset.
-⍝ ←OFFSET - OFFSET.
-∇OFFSET←OFFSET HEXDUMP_LINE BYTE_VECTOR
+∇OFFSET HEXDUMP_LINE BYTE_VECTOR
   ⍝ Offset.
-  ⍞←OFFSET_DIGITS HEXIFY OFFSET ◊ ⍞←":"
+  ⍞←7 HEXIFY OFFSET ◊ ⍞←":"
   ⍝ Bytes.
-  ⊣ {⍞←⍵ ⊣ ⍞←" "}¨ BYTE_DIGITS HEXIFY¨ BYTE_VECTOR
+  ⊣ {⍞←HEXDUMP_BYTE_DIGITS HEXIFY ⍵ ⊣ ⍞←" "}¨ BYTE_VECTOR
   ⍝ Characters.
-  ⍞←" |",⍨ ⎕UCS SPACE_BYTE /⍨ (BYTE_DIGITS+1)×BYTES_PER_LINE - ≢BYTE_VECTOR
+  ⍞←⎕UCS SPACE_BYTE/⍨(HEXDUMP_BYTE_DIGITS+1)×HEXDUMP_BYTES_PER_LINE-≢BYTE_VECTOR
+  ⍞←" |"
   ⍞←⎕UCS {(SPACE_BYTE ⍵)⌷⍨1+ IS_DISPLAYABLE ⍵}¨ BYTE_VECTOR
-  ⍞←"|"
-
-  ⍞←"\n"
+  ⍞←"|\n"
 ∇
 
-⍝ Prints out a hexdump of the given byte vector.
-∇HEXDUMP BYTE_VECTOR; OFFSET
+⍝ Prints out a hexdump.
+⍝ →FILE_DESCRIPTOR - the file descriptor to generate the hexdump from.
+∇HEXDUMP FILE_DESCRIPTOR; OFFSET;BYTE_VECTOR
   OFFSET←0
-  ⊣ {OFFSET←BYTES_PER_LINE+ OFFSET HEXDUMP_LINE ⍵}¨ BYTES_PER_LINE SIZED_PARTITION BYTE_VECTOR
+
+  LREAD_LOOP:
+    BYTE_VECTOR←HEXDUMP_BYTES_PER_LINE FIO∆FREAD_SIZED FILE_DESCRIPTOR
+    OFFSET HEXDUMP_LINE BYTE_VECTOR
+    OFFSET←OFFSET+≢BYTE_VECTOR
+
+    →(0≢FIO∆FEOF   FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    →(0≢FIO∆FERROR FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    →LREAD_LOOP
+  LEND_READ_LOOP:
 ∇
 
 
 
 ⍝ Prints out a line of C code output of the byte vector.
 ⍝ →BYTE_VECTOR - the byte vector to print.
-⍝ ←IGNORE - magic return value so the function works in defuns.
-∇IGNORE←GENERATE_C_LINE BYTE_VECTOR
+∇GENERATE_C_LINE BYTE_VECTOR
   ⍞←"    "
   ⊣ {⍞←", " ⊣ ⍞←⍵ ⊣ ⍞←"0x"}¨ 2 HEXIFY¨ BYTE_VECTOR
   ⍞←"\n"
-
-  IGNORE←⍬
 ∇
 
-⍝ Prints out C code of the byte vector.
-∇GENERATE_C BYTE_VECTOR
+⍝ Prints out C code.
+⍝ →FILE_DESCRIPTOR - the file descriptor to generate C from.
+∇GENERATE_C FILE_DESCRIPTOR; BYTE_VECTOR;BYTE_COUNT
+  BYTE_COUNT←0
+
   ⍞←"unsigned char data[] = {\n"
-  ⊣ {GENERATE_C_LINE ⍵}¨ 16 SIZED_PARTITION BYTE_VECTOR
+  LREAD_LOOP:
+    BYTE_VECTOR←16 FIO∆FREAD_SIZED FILE_DESCRIPTOR
+    BYTE_COUNT←BYTE_COUNT+≢BYTE_VECTOR
+    GENERATE_C_LINE BYTE_VECTOR
+
+    →(0≢FIO∆FEOF   FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    →(0≢FIO∆FERROR FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    →LREAD_LOOP
+  LEND_READ_LOOP:
   ⍞←"};\n"
-  ⍞←"unsigned int data_length = " ◊ ⍞←≢BYTE_VECTOR ◊ ⍞←";\n"
+
+  ⍞←"unsigned int data_length = " ◊ ⍞←BYTE_COUNT ◊ ⍞←";\n"
 ∇
 
 
 
-⍝ Handles printing the output of the given file (hexdump, code, etc..).
-⍝ →FILENAME - the filename to print. A value with a tally of 0 means don't
-⍝ print.
-⍝ →BYTE_VECTOR - the raw byte contents of the file.
-⍝ ←IGNORE - magic return value so the function works in defuns.
-∇IGNORE←FILENAME HANDLE_FILE BYTE_VECTOR
-  →(0≡≢FILENAME) ⍴ LDONT_PRINT_FILENAME
-    ⎕←FILENAME,":"
-  LDONT_PRINT_FILENAME:
-
-  →(¯2≢BYTE_VECTOR) ⍴ LNO_READ_ERROR
-    ERROR "failed to open file" ◊ →LREAD_ERROR
-  LNO_READ_ERROR:
-
+⍝ Handles printing the output of the given file descriptor (hexdump, code,
+⍝ etc..).
+⍝ →FILE_DESCRIPTOR - the file descriptor to read from. Will not be closed.
+∇HANDLE_FD FILE_DESCRIPTOR
   ⍝ If a code generator is selected, we use that, else we just do a hexdump.
   →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
-  LDEFAULT:
     →(0≡≢ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LNO_SET_LANGUAGE
       PANIC "HANDLE_FILE: unreachable"
     LNO_SET_LANGUAGE:
-    HEXDUMP BYTE_VECTOR ◊ →LSWITCH_END
-  LGENERATE_C: GENERATE_C BYTE_VECTOR ◊ →LSWITCH_END
+
+    HEXDUMP FILE_DESCRIPTOR
+    →LSWITCH_END
+
+  LGENERATE_C: GENERATE_C FILE_DESCRIPTOR ◊ →LSWITCH_END
   LSWITCH_END:
+
+LREAD_ERROR:
+∇
+
+⍝ Handles printing the output of the given file (hexdump, code, etc..).
+⍝ →PATH - the path of the file.
+⍝ →PRINT_PATH - whether to print the path along with the output. A scalar 1
+⍝ means print, 0 means don't.
+⍝ ←IGNORE - magic return value so the function works in defuns.
+∇IGNORE←PRINT_PATH HANDLE_FILE PATH; DESCRIPTOR
+  →(~PRINT_PATH) ⍴ LDONT_PRINT_PATH
+    ⍞←PATH,":\n"
+  LDONT_PRINT_PATH:
+
+  DESCRIPTOR←"r" FIO∆FOPEN PATH
+  →(0<DESCRIPTOR) ⍴ LNO_READ_ERROR
+    ERROR "failed to open file" ◊ →LREAD_ERROR
+  LNO_READ_ERROR:
+
+  HANDLE_FD DESCRIPTOR
 
 LREAD_ERROR:
   IGNORE←⍬
@@ -255,10 +273,10 @@ LREAD_ERROR:
   →(1≡≢ARGS∆FILENAMES) ⍴ LREAD_FILE
     ⍝ We only add the filenames when there are multiple fixes to output, to
     ⍝ differentiate them.
-    ⊣ {⍵ HANDLE_FILE FIO∆READ_ENTIRE_FILE ⍵}¨ ARGS∆FILENAMES
+    ⊣ {1 HANDLE_FILE ⍵}¨ ARGS∆FILENAMES
     →LSWITCH_END
-  LREAD_FILE:  ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
-  LREAD_STDIN: ⊣ ⍬ HANDLE_FILE FIO∆READ_ENTIRE_FD FIO∆STDIN         ◊ →LSWITCH_END
+  LREAD_FILE:  ⊣ 0 HANDLE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
+  LREAD_STDIN: ⊣ ⍬ HANDLE_FD FIO∆STDIN         ◊ →LSWITCH_END
   LSWITCH_END:
 ∇
 MAIN
