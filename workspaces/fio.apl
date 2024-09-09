@@ -84,6 +84,18 @@ FIO∆FEOF←{⎕FIO[10] ⍵}
 ⍝ ←Non-zero if an error ocurred reading file descriptor.
 FIO∆FERROR←{⎕FIO[11] ⍵}
 
+⍝ Zi ← Ai ⎕FIO[20] Bh    mkdir(Bc, Ai)
+⍝ Creates the given directory if it doesn't exist with file mode 0755. Does not
+⍝ recurse.
+⍝ →⍵ - file path.
+⍝ ←Non zero if an error occured.
+FIO∆MKDIR←{(8⊥0 7 5 5) ⎕FIO[20] ⍵}
+⍝ Creates the given directory if it doesn't exist. Does not recurse.
+⍝ →⍵ - file path.
+⍝ →⍺ - octal mode for the directory as an integer vector (i.e. 0 7 5 5.)
+⍝ ←Non zero if an error occured.
+FIO∆MKDIR_MODE←{(8⊥⍺) ⎕FIO[20] ⍵}
+
 ⍝ Zi ← Ac ⎕FIO[23] Bh    fwrite(Ac, 1, ⍴Ac, Bh) 1 Unicode per Ac, Output UTF8
 ⍝ Writes a characte vector to a file descriptor.
 ⍝ →⍵ - file descriptor.
@@ -152,6 +164,23 @@ FIO∆SPLIT_PATH←{{⍵~'/'}¨⍵⊂⍨1++'/'⍷⍵}
 
 ⍝ Joins two file paths together with a seperator.
 FIO∆JOIN_PATHS←{⍺,'/',⍵}
+
+⍝ Creates the given directory and it's parent directories if they don't exist.
+⍝ →PATH - file path.
+⍝ →MODE - octal mode for the directory as an integer vector (i.e. 0 7 5 5.)
+⍝ ←ERROR_CODES - The list of error codes from FIO∆MKDIR_MODE for each directory
+⍝ level, non-zero if an error occured.
+∇ERROR_CODES←MODE FIO∆MKDIRS_MODE PATH; DIRECTORIES
+  DIRECTORIES←FIO∆JOIN_PATHS\ FIO∆SPLIT_PATH PATH
+  ERROR_CODES←{MODE FIO∆MKDIR_MODE ⍵}¨ DIRECTORIES
+∇
+⍝ Creates the given directory and it's parent directories if they don't exist
+⍝ with file mode 0755.
+⍝ →⍵ - file path.
+⍝ ←Non zero if an error occured.
+⍝ ←The list of error codes from FIO∆MKDIRS_MODE for each directory level,
+⍝ non-zero if an error occured.
+FIO∆MKDIRS←{(0 7 5 5) FIO∆MKDIRS_MODE ⍵}
 
 
 
