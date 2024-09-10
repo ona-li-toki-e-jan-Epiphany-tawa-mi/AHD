@@ -134,11 +134,17 @@ ARGS∆OUTPUTS_FOLDER←⍬
 
 
 
+⍝ Counters to show how many tests passed.
+TEST_COUNT←0
+PASSED_TEST_COUNT←0
+
 ⍝ Performs an individual testing of a file.
 ⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the source file path, 2 - the
 ⍝ output file path.
 ⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
 ∇ARGUMENTS RUN_TEST FILE_PATHS; SOURCE_FILE;OUTPUT_FILE;EXPECTED_RESULT
+  TEST_COUNT←1+TEST_COUNT
+
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
   ⍞←"Testing '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'\n"
@@ -152,7 +158,9 @@ ARGS∆OUTPUTS_FOLDER←⍬
     ERROR "output from AHD on '",SOURCE_FILE,"' differs from contents of '",OUTPUT_FILE,"'"
     →LTEST_END
   LTEST_PASS:
-    ⍞←"Test passed\n" ◊ →LTEST_END
+    ⍞←"Test passed\n"
+    PASSED_TEST_COUNT←1+PASSED_TEST_COUNT
+    →LTEST_END
   LTEST_END:
 ∇
 
@@ -197,12 +205,14 @@ ARGS∆OUTPUTS_FOLDER←⍬
   LRECORD:
     ⊣ FIO∆MKDIRS ARGS∆OUTPUTS_FOLDER
     RECORD¨ARGS∆SOURCES_FILENAMES
+    ⍞←"Recording complete\n"
     →LSWITCH_END
   LTEST:
     →(FIO∆IS_DIRECTORY ARGS∆OUTPUTS_FOLDER) ⍴ LOUTPUTS_DIRECTORY_EXISTS
       PANIC "outputs folder '",ARGS∆OUTPUTS_FOLDER,"' does not exist"
     LOUTPUTS_DIRECTORY_EXISTS:
     TEST¨ARGS∆SOURCES_FILENAMES
+    ⍞←PASSED_TEST_COUNT ◊ ⍞←"/" ◊ ⍞←TEST_COUNT ◊ ⍞←" tests passed\n"
     →LSWITCH_END
   LSWITCH_END:
 ∇
