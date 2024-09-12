@@ -130,6 +130,9 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ⍬ RUN_RECORD SOURCE_FILE (OUTPUT_FILE_BASE,".hex")
   ⍝ Records c code generator output.
   "+c" "c" RUN_RECORD SOURCE_FILE (OUTPUT_FILE_BASE,".h")
+
+  ⍝ Output newline for a space between this and the next recording output.
+  ⍞←"\n"
 ∇
 
 
@@ -138,33 +141,69 @@ ARGS∆OUTPUTS_FOLDER←⍬
 TEST_COUNT←0
 PASSED_TEST_COUNT←0
 
+⍝ The byte value of a newline.
+NEWLINE_BYTE←⎕UCS "\n"
+
 ⍝ Performs an individual testing of a file.
 ⍝ →FILE_PATHS - a 2-element nested vector of: 1 - the source file path, 2 - the
 ⍝ output file path.
 ⍝ →ARGUMENTS - a nested vector of additional arguments to pass to AHD.
-∇ARGUMENTS RUN_TEST FILE_PATHS; SOURCE_FILE;OUTPUT_FILE;EXPECTED_RESULT
+∇ARGUMENTS RUN_TEST FILE_PATHS; SOURCE_FILE;OUTPUT_FILE;EXPECTED_RESULT_LINES;ACTUAL_RESULT_LINES;EXPECTED_RESULT_LINE;ACTUAL_RESULT_LINE;LINE_NUMBER
   TEST_COUNT←1+TEST_COUNT
 
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
   ⍞←"Testing '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'\n"
 
-  EXPECTED_RESULT←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
-  →(¯2≢EXPECTED_RESULT) ⍴ LREAD_SUCCESS
+  ⍝ Reads in what we expect as nested lines.
+  EXPECTED_RESULT_LINES←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
+  →(¯2≢EXPECTED_RESULT_LINES) ⍴ LREAD_SUCCESS
     PANIC "unable to read file '",OUTPUT_FILE,"'"
   LREAD_SUCCESS:
+  EXPECTED_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT EXPECTED_RESULT_LINES
 
-  →(EXPECTED_RESULT≡ RUN_AHD ARGUMENTS,⊂SOURCE_FILE) ⍴ LTEST_PASS
-    ERROR "output from AHD on '",SOURCE_FILE,"' differs from contents of '",OUTPUT_FILE,"'"
-    →LTEST_END
-  LTEST_PASS:
-    ⍞←"Test passed\n"
-    PASSED_TEST_COUNT←1+PASSED_TEST_COUNT
-    →LTEST_END
-  LTEST_END:
+  ⍝ Reads in what we got as nested lines.
+  ACTUAL_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT RUN_AHD ARGUMENTS,⊂SOURCE_FILE
+
+  ⍝ Check if line counts differ.
+  →((≢EXPECTED_RESULT_LINES)≡≢ACTUAL_RESULT_LINES) ⍴ LSAME_LINE_COUNT
+    ERROR "line count of output from AHD differs in line count of expected results"
+    ERROR "Got:      ",(⍕≢ACTUAL_RESULT_LINES)," lines"
+    ERROR "Expected: ",(⍕≢EXPECTED_RESULT_LINES)," lines"
+    ERROR "Test failed"
+    →LFAILED
+  LSAME_LINE_COUNT:
+
+  LINE_NUMBER←1
+  ⍝ Compare line-by-line.
+  →(1>≢EXPECTED_RESULT_LINES) ⍴ LCHECK_LOOP_END
+  LCHECK_LOOP:
+    EXPECTED_RESULT_LINE←↑EXPECTED_RESULT_LINES
+    ACTUAL_RESULT_LINE←↑ACTUAL_RESULT_LINES
+
+    →(EXPECTED_RESULT_LINE≡ACTUAL_RESULT_LINE) ⍴ LEQUAL
+      ERROR "Contents of AHD output differs from expected results on line ",⍕LINE_NUMBER
+      ERROR "Got:      '",(FIO∆BYTES_TO_UTF8 ACTUAL_RESULT_LINE),"'"
+      ERROR "Expected: '",(FIO∆BYTES_TO_UTF8 EXPECTED_RESULT_LINE),"'"
+      ERROR "Test failed"
+      →LFAILED
+    LEQUAL:
+
+    →(1≡≢EXPECTED_RESULT_LINES) ⍴ LCHECK_LOOP_END
+    EXPECTED_RESULT_LINES←1↓EXPECTED_RESULT_LINES
+    ACTUAL_RESULT_LINES←1↓ACTUAL_RESULT_LINES
+    LINE_NUMBER←+LINE_NUMBER
+    →LCHECK_LOOP
+  LCHECK_LOOP_END:
+
+  ⍞←"Test passed\n"
+  PASSED_TEST_COUNT←1+PASSED_TEST_COUNT
+
+LFAILED:
+  ⍝ Output newline for a space between this and the next test output.
+  ⍞←"\n"
 ∇
 
-⍝ TODO Output line contents for user to see.
 ⍝ Performs the "test" action of this testing script, running AHD and comparing
 ⍝ the results to what was previously recorded.
 ⍝ →FILENAME - the file in the sources directory to test.
