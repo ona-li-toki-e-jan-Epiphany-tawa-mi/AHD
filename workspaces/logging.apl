@@ -17,7 +17,8 @@
 ⍝ AHD. If not, see <https://www.gnu.org/licenses/>.
 
 ⍝ Logging module.
-⍝ Depends on fio.apl.
+
+⊣ ⍎")COPY_ONCE fio.apl"
 
 
 
