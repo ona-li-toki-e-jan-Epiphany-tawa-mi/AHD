@@ -96,7 +96,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
 ⍝ →FILE_PATH - the file.
 ⍝ →BYTE_VECTOR - the data.
 ∇BYTE_VECTOR WRITE_FILE FILE_PATH; FILE_DESCRIPTOR
-  ⍞←"Writing to '",FILE_PATH,"'\n"
+  ⍞←"Writing to '",FILE_PATH,"'...\n"
 
   FILE_DESCRIPTOR←"w" FIO∆FOPEN FILE_PATH
   →(0<FILE_DESCRIPTOR) ⍴ LSUCCESS
@@ -114,7 +114,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
 ∇ARGUMENTS RUN_RECORD FILE_PATHS; SOURCE_FILE;RECORDING_FILE
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
-  ⍞←"Recording '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'\n"
+  ⍞←"Recording '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'...\n"
 
   OUTPUT_FILE WRITE_FILE⍨ RUN_AHD ARGUMENTS,⊂SOURCE_FILE
 ∇
@@ -153,7 +153,7 @@ NEWLINE_BYTE←⎕UCS "\n"
 
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
-  ⍞←"Testing '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'\n"
+  ⍞←"Testing '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'...\n"
 
   ⍝ Reads in what we expect as nested lines.
   EXPECTED_RESULT_LINES←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
@@ -222,18 +222,20 @@ LFAILED:
 ⍝ Spawns an instance of AHD.
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
-∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD;COMMAND
+∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD;COMMAND;CURRENT_TIME_MS
   COMMAND←ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ARGUMENTS
-  ⍞←"Running '",COMMAND,"'\n"
+  ⍞←"Running '",COMMAND,"'...\n"
+
+  CURRENT_TIME_MS←FIO∆GET_TIME_OF_DAY 1000
 
   AHD_FD←FIO∆POPEN_READ COMMAND
   →(0≢AHD_FD) ⍴ LSUCCESS
     PANIC "failed to launch AHD"
   LSUCCESS:
-
   OUTPUT←FIO∆READ_ENTIRE_FD AHD_FD
-
   ⊣ FIO∆PCLOSE AHD_FD
+
+  ⍞←"AHD took " ◊ ⍞←1000÷⍨CURRENT_TIME_MS-⍨ FIO∆GET_TIME_OF_DAY 1000 ◊ ⍞← " seconds\n"
 ∇
 
 ∇MAIN
@@ -243,6 +245,7 @@ LFAILED:
     PANIC "MAIN: unreachable"
   LRECORD:
     ⊣ FIO∆MKDIRS ARGS∆OUTPUTS_FOLDER
+
     RECORD¨ARGS∆SOURCES_FILENAMES
     ⍞←"Recording complete\n"
     →LSWITCH_END
@@ -250,8 +253,13 @@ LFAILED:
     →(FIO∆IS_DIRECTORY ARGS∆OUTPUTS_FOLDER) ⍴ LOUTPUTS_DIRECTORY_EXISTS
       PANIC "outputs folder '",ARGS∆OUTPUTS_FOLDER,"' does not exist"
     LOUTPUTS_DIRECTORY_EXISTS:
+
     TEST¨ARGS∆SOURCES_FILENAMES
-    ⍞←PASSED_TEST_COUNT ◊ ⍞←"/" ◊ ⍞←TEST_COUNT ◊ ⍞←" tests passed\n"
+    ⍞←PASSED_TEST_COUNT ◊ ⍞←"/" ◊ ⍞←TEST_COUNT ◊ ⍞←" tests passed - "
+    →(PASSED_TEST_COUNT≡TEST_COUNT) ⍴ LALL_TESTS_PASSED
+      ⍞←"FAIL\n" ◊ →LTESTS_FAILED
+    LALL_TESTS_PASSED: ⍞←"OK\n"
+    LTESTS_FAILED:
     →LSWITCH_END
   LSWITCH_END:
 ∇
