@@ -175,14 +175,14 @@ FIO∆IS_DIRECTORY←{¯2≢FIO∆LIST_DIRECTORY ⍵}
 ⍝ VALUE VALUE DELIMETER DELIMETER VALUE -> (VALUE VALUE) () (VALUE).) The
 ⍝ delimiter value will not appear in the resulting vectors.
 ∇RESULT←DELIMETER FIO∆SPLIT VECTOR
-  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++\ DELIMETER ⍷ VECTOR
+  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++\ VECTOR ∊ DELIMETER
 ∇
 ⍝ Splits a vector by a delimiter value into a nested vector of vectors. If a
 ⍝ vector ends up being empty, it will not be included in the result (i.e. VALUE
 ⍝ VALUE DELIMETER DELIMETER VALUE -> (VALUE VALUE) (VALUE).) The delimiter value
 ⍝ will not appear in the resulting vectors.
 ∇RESULT←DELIMETER FIO∆SPLIT_CLEAN VECTOR
-  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++ DELIMETER ⍷ VECTOR
+  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++ VECTOR ∊ DELIMETER
 ∇
 
 ⍝ Splits a file path into it's seperate parts and removes the seperators (i.e.
