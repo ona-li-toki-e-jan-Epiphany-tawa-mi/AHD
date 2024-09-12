@@ -42,14 +42,13 @@ ARGS∆CODE_GENERATOR_LANGUAGE←⍬
 ⍝ the repsective option's argument.
 ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
-⍝ Displays and error message and exits.
-∇ARGS∆PANIC MESSAGE
-  ERROR MESSAGE
-  ⍞←"Try 'ahd +h' for more information"
-  ⍎")OFF"
+⍝ Displays a short help message.
+∇ARGS∆DISPLAY_SHORT_HELP
+  ⍞←"Try '",ARGS∆PROGRAM_NAME," -- +h' for more information\n"
+  ⍞←"Try '",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- +h' for more information\n"
 ∇
 
-⍝ Displays help information and exits.
+⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
   ⍞←"  ",ARGS∆PROGRAM_NAME," -- [options...] [FILE...]\n"
@@ -63,10 +62,10 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍞←"  +v, ++version display version.\n"
   ⍞←"  +c, ++code-generator\n"
   ⍞←"    Outputs code to bake the data into a program. Expects a language as an\n"
-  ⍞←"    argument. Supported Languages: c"
+  ⍞←"    argument. Supported Languages: c\n"
 ∇
 
-⍝ Displays the version and exits.
+⍝ Displays the version.
 ∇ARGS∆DISPLAY_VERSION
   ⍞←"ahd 0.1.4"
 ∇
@@ -74,7 +73,8 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ Enables the code generator and tries to and set it to use the given language.
 ∇ARGS∆SET_CODE_GENERATOR_LANGUAGE LANGUAGE
   →("c"≡LANGUAGE) ⍴ LKNOWN_LANGUAGE
-    ARGS∆PANIC "language '",LANGUAGE,"' does not support code generation"
+    ARGS∆DISPLAY_SHORT_HELP
+    PANIC "language '",LANGUAGE,"' does not support code generation"
   LKNOWN_LANGUAGE:
 
   ARGS∆CODE_GENERATOR_LANGUAGE←LANGUAGE
@@ -85,10 +85,13 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ ARGS∆* accordingly.
 ∇ARGS∆PARSE_SHORT_OPTION OPTION
   →({OPTION≡⍵}¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
-  LDEFAULT:        ARGS∆PANIC "unknown option '+",OPTION,"'"       ◊ →LSWITCH_END
-  LHELP:           ARGS∆DISPLAY_HELP    ◊ ⍎")OFF"                  ◊ →LSWITCH_END
-  LVERSION:        ARGS∆DISPLAY_VERSION ◊ ⍎")OFF"                  ◊ →LSWITCH_END
-  LCODE_GENERATOR: ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1           ◊ →LSWITCH_END
+  LDEFAULT:
+    ARGS∆DISPLAY_SHORT_HELP
+    PANIC "unknown option '+",OPTION,"'"
+    →LSWITCH_END
+  LHELP:           ARGS∆DISPLAY_HELP    ◊ ⍎")OFF"        ◊ →LSWITCH_END
+  LVERSION:        ARGS∆DISPLAY_VERSION ◊ ⍎")OFF"        ◊ →LSWITCH_END
+  LCODE_GENERATOR: ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1 ◊ →LSWITCH_END
   LSWITCH_END:
 ∇
 
@@ -111,15 +114,18 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
     ⍝ Anything leftover is a file.
     ARGS∆FILENAMES←ARGS∆FILENAMES,⊂ARGUMENT
     →LSWITCH_END
-  LINVALID_LONG_OPTION: ARGS∆PANIC "unknown option '",ARGUMENT,"'"       ◊ →LSWITCH_END
-  LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT              ◊ →LSWITCH_END
-  LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                            ◊ →LSWITCH_END
+  LINVALID_LONG_OPTION:
+    ARGS∆DISPLAY_SHORT_HELP
+    PANIC "unknown option '",ARGUMENT,"'"
+    →LSWITCH_END
+  LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT   ◊ →LSWITCH_END
+  LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                 ◊ →LSWITCH_END
   LSET_CODE_GENERATOR_LANGUAGE:
     ARGS∆SET_CODE_GENERATOR_LANGUAGE ARGUMENT
     →LSWITCH_END
-  LHELP:                ARGS∆DISPLAY_HELP                                ◊ →LSWITCH_END
-  LVERSION:             ARGS∆DISPLAY_VERSION                             ◊ →LSWITCH_END
-  LCODE_GENERATOR:      ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1            ◊ →LSWITCH_END
+  LHELP:                ARGS∆DISPLAY_HELP                     ◊ →LSWITCH_END
+  LVERSION:             ARGS∆DISPLAY_VERSION                  ◊ →LSWITCH_END
+  LCODE_GENERATOR:      ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1 ◊ →LSWITCH_END
   LSWITCH_END:
 ∇
 
@@ -135,7 +141,8 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
   ⍝ Tests for any options with arguments that were not supplied an argument.
   →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
-    ARGS∆PANIC "options '+c' and '++code-generator' expect an argument"
+    ARGS∆DISPLAY_SHORT_HELP
+    PANIC "options '+c' and '++code-generator' expect an argument"
   LNO_INVALID_OPTIONS:
 ∇
 
