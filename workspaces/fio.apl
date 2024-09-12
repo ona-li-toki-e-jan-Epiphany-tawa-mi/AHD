@@ -163,10 +163,24 @@ FIO∆UTF8_TO_BYTES←{⎕UCS 18 ⎕CR ⍵}
 ⍝ ←1 if the file path represents a directory, else 0.
 FIO∆IS_DIRECTORY←{¯2≢FIO∆LIST_DIRECTORY ⍵}
 
+⍝ Splits a vector by a delimiter value into a nested vector of vectors. If a
+⍝ vector ends up being empty, it will still be included in the result (i.e.
+⍝ VALUE VALUE DELIMETER DELIMETER VALUE -> (VALUE VALUE) () (VALUE).) The
+⍝ delimiter value will not appear in the resulting vectors.
+∇RESULT←DELIMETER FIO∆SPLIT VECTOR
+  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++\ DELIMETER ⍷ VECTOR
+∇
+⍝ Splits a vector by a delimiter value into a nested vector of vectors. If a
+⍝ vector ends up being empty, it will not be included in the result (i.e. VALUE
+⍝ VALUE DELIMETER DELIMETER VALUE -> (VALUE VALUE) (VALUE).) The delimiter value
+⍝ will not appear in the resulting vectors.
+∇RESULT←DELIMETER FIO∆SPLIT_CLEAN VECTOR
+  RESULT←{⍵~DELIMETER}¨ VECTOR ⊂⍨1++ DELIMETER ⍷ VECTOR
+∇
+
 ⍝ Splits a file path into it's seperate parts and removes the seperators (i.e.
 ⍝ FIO∆SPLIT_PATH "../a/p///apples" → ".." "a" "p" "apples"
-FIO∆SPLIT_PATH←{{⍵~'/'}¨⍵⊂⍨1++'/'⍷⍵}
-
+FIO∆SPLIT_PATH←{'/' FIO∆SPLIT_CLEAN ⍵}
 ⍝ Joins two file paths together with a seperator.
 FIO∆JOIN_PATHS←{⍺,'/',⍵}
 
