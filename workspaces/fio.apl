@@ -138,6 +138,13 @@ FIO∆PCLOSE←{⎕FIO[25] ⍵}
 ⍝ ←The filenames in the directory, or a scalar ¯2 on failure.
 FIO∆LIST_DIRECTORY←{⎕FIO[29] ⍵}
 
+⍝ Zi ←    ⎕FIO[50] Bu    gettimeofday()
+⍝ Returns the current time since the Epoch in either seconds, milliseconds, or
+⍝ microseconds.
+⍝ →⍵ - the time divisor. 1 - seconds, 1000 - milliseconds, 1000000 -
+⍝ microseconds.
+FIO∆GET_TIME_OF_DAY←{⎕FIO[50] ⍵}
+
 
 
 ⍝ Converts a byte vector to a UTF-8 encoded character vector.
