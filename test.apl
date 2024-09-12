@@ -221,7 +221,7 @@ LFAILED:
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
 ∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD;COMMAND;CURRENT_TIME_MS
-  COMMAND←ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ARGUMENTS
+  COMMAND←ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ FIO∆ESCAPE_SHELL_ARGUMENT¨ ARGUMENTS
   ⍞←"Running '",COMMAND,"'...\n"
 
   CURRENT_TIME_MS←FIO∆GET_TIME_OF_DAY 1000
