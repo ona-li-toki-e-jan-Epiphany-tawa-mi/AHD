@@ -97,7 +97,7 @@ FIO∆MKDIR←{(8⊥0 7 5 5) ⎕FIO[20] ⍵}
 FIO∆MKDIR_MODE←{(8⊥⍺) ⎕FIO[20] ⍵}
 
 ⍝ Zi ← Ac ⎕FIO[23] Bh    fwrite(Ac, 1, ⍴Ac, Bh) 1 Unicode per Ac, Output UTF8
-⍝ Writes a characte vector to a file descriptor.
+⍝ Writes a character vector to a file descriptor.
 ⍝ →⍵ - file descriptor.
 ⍝ →⍺ - characte vector.
 ⍝ ←Error code.
@@ -139,6 +139,11 @@ FIO∆PCLOSE←{⎕FIO[25] ⍵}
 FIO∆LIST_DIRECTORY←{⎕FIO[29] ⍵}
 
 
+
+⍝ Converts a byte vector to a UTF-8 encoded character vector.
+FIO∆BYTES_TO_UTF8←{19 ⎕CR ⎕UCS ⍵}
+⍝ Converts a UTF-8 encoded character vector to a byte vector.
+FIO∆UTF8_TO_BYTES←{⎕UCS 18 ⎕CR ⍵}
 
 ⍝ Reads input from the file descriptor until EOF is reached and outputs the
 ⍝ contents as a byte vector.
