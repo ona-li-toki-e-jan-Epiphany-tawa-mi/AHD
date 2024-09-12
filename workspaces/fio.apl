@@ -208,6 +208,10 @@ FIO∆JOIN_PATHS←{⍺,'/',⍵}
 ⍝ non-zero if an error occured.
 FIO∆MKDIRS←{(0 7 5 5) FIO∆MKDIRS_MODE ⍵}
 
+⍝ Escapes the given shell argument with quotes. Intended for use with
+⍝ FIO∆POPEN_{READ,WRITE}
+FIO∆ESCAPE_SHELL_ARGUMENT←{"'","'",⍨∊⍵{(⍺ "\\'")[1+⍵]}¨"'"∊⍨⍵}
+
 
 
 ⍝ Common file descriptors.
