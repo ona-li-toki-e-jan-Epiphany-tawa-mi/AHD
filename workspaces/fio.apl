@@ -36,12 +36,19 @@
 ⍝
 ⍝ Note: functions have been added as-needed, so it will not cover everything in
 ⍝ ⎕FIO.
+⍝
+⍝ Changelog:
+⍝ - Intial release.
 
 
 
 ⍝ See <https://www.gnu.org/software/apl/Library-Guidelines-GNU-APL.html> for
 ⍝ details.
-FIO⍙metadata←"Author" "BugEmail" "Documentation" "Download" "LICENSE" "Portability" "Provides" "Requires" "Version",⍪"ona li toki e jan Epiphany tawa mi" "" "" "" "ZLIB" "L3" "FIO" "" "0.1.0"
+FIO⍙metadata←"Author" "BugEmail" "Documentation" "Download" "LICENSE" "Portability" "Provides" "Requires" "Version",⍪"ona li toki e jan Epiphany tawa mi" "" "https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/gnu-apl-libraries" "https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/gnu-apl-libraries/blob/master/fio.apl" "ZLIB" "L3" "FIO" "" "0.1.0"
+
+⍝ Also on my personal git server:
+⍝ - I2P - http://oytjumugnwsf4g72vemtamo72vfvgmp4lfsf6wmggcvba3qmcsta.b32.i2p/cgit/gnu-apl-libraries.git/about
+⍝ - Tor - http://4blcq4arxhbkc77tfrtmy4pptf55gjbhlj32rbfyskl672v2plsmjcyd.onion/cgit/gnu-apl-libraries.git/about
 
 
 
@@ -208,9 +215,20 @@ FIO∆JOIN_PATHS←{⍺,'/',⍵}
 ⍝ non-zero if an error occured.
 FIO∆MKDIRS←{(0 7 5 5) FIO∆MKDIRS_MODE ⍵}
 
+⍝ Replaces all instances of a character sequence in a character vector with
+⍝ another one.
+⍝ →MATCH_REPLACEMENT - A two-element nested array of character vectors, the
+⍝ first being the vector to match, and the second being the replacement.
+∇RESULT←MATCH_REPLACEMENT FIO∆CVECTOR_REPLACE CHARACTER_VECTOR; MATCH;REPLACEMENT
+  MATCH←↑MATCH_REPLACEMENT[1]
+  REPLACEMENT←↑MATCH_REPLACEMENT[2]
+
+  RESULT←∊CHARACTER_VECTOR{(⍺ REPLACEMENT)[1+⍵]}¨CHARACTER_VECTOR∊MATCH
+∇
+
 ⍝ Escapes the given shell argument with quotes. Intended for use with
 ⍝ FIO∆POPEN_{READ,WRITE}
-FIO∆ESCAPE_SHELL_ARGUMENT←{"'","'",⍨∊⍵{(⍺ "'\\''")[1+⍵]}¨⍵∊"'"}
+FIO∆ESCAPE_SHELL_ARGUMENT←{"'","'",⍨ ⍵ FIO∆CVECTOR_REPLACE⍨ "'" "'\\''"}
 
 
 
