@@ -1,5 +1,11 @@
 # Changelog
 
+- Fixed bug where reading from stdin outputs byte numbers.
+- Fixed value error on reading from stdin.
+- Updated fio.apl library.
+
+## 0.1.4
+
 - Vastly improved CPU and memory usage on dumping large files.
 - Fixed out-of-memory crash on dumping large files.
 - Improved command line argument parsing.

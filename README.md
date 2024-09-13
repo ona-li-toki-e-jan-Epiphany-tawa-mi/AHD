@@ -48,7 +48,6 @@ nur.repos.ona-li-toki-e-jan-Epiphany-tawa-mi.ahd
 
 ## Release notes
 
-- Vastly improved CPU and memory usage on dumping large files.
-- Fixed out-of-memory crash on dumping large files.
-- Improved command line argument parsing.
-- Added integration testing.
+- Fixed bug where reading from stdin outputs byte numbers.
+- Fixed value error on reading from stdin.
+- Updated fio.apl library.
