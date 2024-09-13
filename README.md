@@ -25,16 +25,16 @@ Get the dependencies as specified in the `How to run` section.
 Then, run one of the following commands:
 
 ```sh
-./test.apl -- test test/sources test/outputs
-apl --script test.apl -- test test/sources test/outputs
+./test.apl -- test tests/sources tests/outputs
+apl --script test.apl -- test tests/sources tests/outputs
 ```
 
 If breaking changes are desired, regenerate the test cases with one of the
 following commands:
 
 ```sh
-./test.apl -- record test/sources test/outputs
-apl --script test.apl -- record test/sources test/outputs
+./test.apl -- record tests/sources tests/outputs
+apl --script test.apl -- record tests/sources tests/outputs
 ```
 
 ## How to install
