@@ -21,7 +21,6 @@
 
 
 ⊣ ⍎")COPY_ONCE fio.apl"
-⊣ ⍎")COPY_ONCE logging.apl"
 
 
 
@@ -74,7 +73,8 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ∇ARGS∆SET_CODE_GENERATOR_LANGUAGE LANGUAGE
   →("c"≡LANGUAGE) ⍴ LKNOWN_LANGUAGE
     ARGS∆DISPLAY_SHORT_HELP
-    PANIC "language '",LANGUAGE,"' does not support code generation"
+    FIO∆STDERR FIO∆FPRINTF⍨ "language '%s' does not support code generation" LANGUAGE
+    ⍎")OFF 1"
   LKNOWN_LANGUAGE:
 
   ARGS∆CODE_GENERATOR_LANGUAGE←LANGUAGE
@@ -84,10 +84,11 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ Parses a single character option (anything after a single "+") and updates
 ⍝ ARGS∆* accordingly.
 ∇ARGS∆PARSE_SHORT_OPTION OPTION
-  →({OPTION≡⍵}¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
+  →(OPTION≡¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
   LDEFAULT:
     ARGS∆DISPLAY_SHORT_HELP
-    PANIC "unknown option '+",OPTION,"'"
+    FIO∆STDERR FIO∆FPRINTF⍨ "unknown option +'%s'" OPTION
+    ⍎")OFF 1"
   LHELP:           ARGS∆DISPLAY_HELP    ◊ ⍎")OFF"        ◊ →LSWITCH_END
   LVERSION:        ARGS∆DISPLAY_VERSION ◊ ⍎")OFF"        ◊ →LSWITCH_END
   LCODE_GENERATOR: ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←1 ◊ →LSWITCH_END
@@ -105,7 +106,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍝ Handles short options
   →((1<≢ARGUMENT)∧('+'≡↑ARGUMENT)∧"++"≢2↑ARGUMENT) ⍴ LSHORT_OPTION
   ⍝ Test for known long options.
-  →({ARGUMENT≡⍵}¨ "++help" "++version" "++code-generator") / LHELP LVERSION LCODE_GENERATOR
+  →((⊂ARGUMENT)⍷"++help" "++version" "++code-generator") / LHELP LVERSION LCODE_GENERATOR
   ⍝ Jumps to error print if ARGUMENT is an unknown long option.
   →("++"≡2↑ARGUMENT) ⍴ LINVALID_LONG_OPTION
   LDEFAULT:
@@ -115,7 +116,8 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
     →LSWITCH_END
   LINVALID_LONG_OPTION:
     ARGS∆DISPLAY_SHORT_HELP
-    PANIC "unknown option '",ARGUMENT,"'"
+    FIO∆STDERR FIO∆FPRINTF⍨ "unknown option '%s'" ARGUMENT
+    ⍎")OFF 1"
   LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT   ◊ →LSWITCH_END
   LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                 ◊ →LSWITCH_END
   LSET_CODE_GENERATOR_LANGUAGE:
@@ -140,26 +142,30 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍝ Tests for any options with arguments that were not supplied an argument.
   →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
     ARGS∆DISPLAY_SHORT_HELP
-    PANIC "options '+c' and '++code-generator' expect an argument"
+    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "options '+c' and '++code-generator' expect an argument"
+    ⍎")OFF 1"
   LNO_INVALID_OPTIONS:
 ∇
 
 
 
 ⍝ Converts a number into a uppercase-hexidecimal character vector.
-⍝ →⍵ - the number.
-⍝ →⍺ - the number of digits the resulting vector should have.
-⍝ ←The character vector.
-HEXIFY←{{⍵⌷"0123456789ABCDEF"}¨1+⍵⊤⍨⍺/16}
+⍝ →N - the number.
+⍝ →DIGITS - the number of digits the resulting vector should have.
+⍝ ←HEX - the character vector.
+∇HEX←DIGITS HEXIFY N
+  HEX←"0123456789ABCDEF"[1+N⊤⍨DIGITS/16]
+∇
 
 ⍝ Returns whether the given byte is a displayable, non-control ASCII character.
 ⍝ →⍵ - a byte.
 ⍝ ←1 if the byte matches the criteria, else 0.
-IS_DISPLAYABLE←{(126≥⍵)∧32≤⍵}
-
+∇RESULT←IS_DISPLAYABLE BYTE
+  RESULT←(126≥BYTE)∧32≤BYTE
+∇
 
 ⍝ The bvte-value of a space character.
-SPACE_BYTE←⎕UCS ' '
+SPACE_BYTE←⎕UCS " "
 
 
 
@@ -168,83 +174,76 @@ HEXDUMP_BYTES_PER_LINE←16
 ⍝ The number of hexidecimal digits needed to represent a byte.
 HEXDUMP_BYTE_DIGITS←2
 
-⍝ Prints out a line of hexdump output of the byte vector.
-⍝ →BYTE_VECTOR - the byte vector.
-⍝ →OFFSET - the current line's byte offset.
-∇OFFSET HEXDUMP_LINE BYTE_VECTOR
-  ⍝ Offset.
-  ⍞←7 HEXIFY OFFSET ◊ ⍞←":"
-  ⍝ Bytes.
-  ⊣ {⍞←HEXDUMP_BYTE_DIGITS HEXIFY ⍵ ⊣ ⍞←" "}¨ BYTE_VECTOR
-  ⍝ Characters.
-  ⍞←⎕UCS SPACE_BYTE/⍨(HEXDUMP_BYTE_DIGITS+1)×HEXDUMP_BYTES_PER_LINE-≢BYTE_VECTOR
-  ⍞←" |"
-  ⍞←⎕UCS {(SPACE_BYTE ⍵)⌷⍨1+ IS_DISPLAYABLE ⍵}¨ BYTE_VECTOR
-  ⍞←"|\n"
-∇
-
 ⍝ Prints out a hexdump.
-⍝ →FILE_DESCRIPTOR - the file descriptor to generate the hexdump from.
-∇HEXDUMP FILE_DESCRIPTOR; OFFSET;BYTE_VECTOR
+⍝ →FD - the file descriptor to generate the hexdump from.
+∇HEXDUMP FD; OFFSET;BYTES
   OFFSET←0
 
   LREAD_LOOP:
-    BYTE_VECTOR←HEXDUMP_BYTES_PER_LINE FIO∆FREAD_SIZED FILE_DESCRIPTOR
-    OFFSET HEXDUMP_LINE BYTE_VECTOR
-    OFFSET←OFFSET+≢BYTE_VECTOR
-
-    →(0≢FIO∆FEOF   FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
-    →(0≢FIO∆FERROR FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    BYTES←16 FIO∆READ_FD FD
+    →(~↑BYTES) ⍴ LEND_READ_LOOP ◊ BYTES←↑1↓BYTES
+    OFFSET HEXDUMP_LINE BYTES
+    OFFSET←OFFSET+≢BYTES
     →LREAD_LOOP
   LEND_READ_LOOP:
 ∇
-
-
-
-⍝ Prints out a line of C code output of the byte vector.
-⍝ →BYTE_VECTOR - the byte vector to print.
-∇GENERATE_C_LINE BYTE_VECTOR
-  ⍞←"    "
-  ⊣ {⍞←", " ⊣ ⍞←⍵ ⊣ ⍞←"0x"}¨ 2 HEXIFY¨ BYTE_VECTOR
-  ⍞←"\n"
+∇OFFSET HEXDUMP_LINE BYTES
+  ⍝ Offset.
+  ⊣ FIO∆PRINTF "%s:" (7 HEXIFY OFFSET)
+  ⍝ Bytes.
+  HEXDUMP_BYTE¨ BYTES
+  ⍝ Characters.
+  ⍞←⎕UCS SPACE_BYTE/⍨(HEXDUMP_BYTE_DIGITS+1)×HEXDUMP_BYTES_PER_LINE-≢BYTES
+  ⍞←" |"
+  ⍞←⎕UCS (SPACE_BYTE,BYTES)[1+(⍳⍨BYTES)×IS_DISPLAYABLE¨BYTES]
+  ⍞←"|\n"
+∇
+∇HEXDUMP_BYTE BYTE
+  ⊣ FIO∆PRINTF " %s" (HEXDUMP_BYTE_DIGITS HEXIFY BYTE)
 ∇
 
+
+
 ⍝ Prints out C code.
-⍝ →FILE_DESCRIPTOR - the file descriptor to generate C from.
-∇GENERATE_C FILE_DESCRIPTOR; BYTE_VECTOR;BYTE_COUNT
+⍝ →FD - the file descriptor to generate C from.
+∇GENERATE_C FD; BYTES;BYTE_COUNT
   BYTE_COUNT←0
 
   ⍞←"unsigned char data[] = {\n"
   LREAD_LOOP:
-    BYTE_VECTOR←16 FIO∆FREAD_SIZED FILE_DESCRIPTOR
-    BYTE_COUNT←BYTE_COUNT+≢BYTE_VECTOR
-    GENERATE_C_LINE BYTE_VECTOR
-
-    →(0≢FIO∆FEOF   FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
-    →(0≢FIO∆FERROR FILE_DESCRIPTOR) ⍴ LEND_READ_LOOP
+    BYTES←16 FIO∆READ_FD FD
+    →(~↑BYTES) ⍴ LEND_READ_LOOP ◊ BYTES←↑1↓BYTES
+    BYTE_COUNT←BYTE_COUNT+≢BYTES
+    GENERATE_C_LINE BYTES
     →LREAD_LOOP
   LEND_READ_LOOP:
   ⍞←"};\n"
 
   ⍞←"unsigned int data_length = " ◊ ⍞←BYTE_COUNT ◊ ⍞←";\n"
 ∇
+∇GENERATE_C_LINE BYTES
+  ⍞←"    "
+  GENERATE_C_BYTE¨ 2 HEXIFY¨ BYTES
+  ⍞←"\n"
+∇
+∇GENERATE_C_BYTE BYTE
+  ⊣ FIO∆PRINTF "0x%s, " BYTE
+∇
 
 
 
 ⍝ Handles printing the output of the given file descriptor (hexdump, code,
 ⍝ etc..).
-⍝ →FILE_DESCRIPTOR - the file descriptor to read from. Will not be closed.
-∇HANDLE_FD FILE_DESCRIPTOR
+⍝ →FD - the file descriptor to read from. Will not be closed.
+∇HANDLE_FD FD
   ⍝ If a code generator is selected, we use that, else we just do a hexdump.
   →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
     →(0≡≢ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LNO_SET_LANGUAGE
-      PANIC "HANDLE_FILE: unreachable"
+      FIO∆STDERR FIO∆FPRINTF⍨ "HANDLE_FILE: unhandled language '%s'" ARGS∆CODE_GENERATOR_LANGUAGE
+      ⍎")OFF 1"
     LNO_SET_LANGUAGE:
-
-    HEXDUMP FILE_DESCRIPTOR
-    →LSWITCH_END
-
-  LGENERATE_C: GENERATE_C FILE_DESCRIPTOR ◊ →LSWITCH_END
+    HEXDUMP FD               ◊ →LSWITCH_END
+  LGENERATE_C: GENERATE_C FD ◊ →LSWITCH_END
   LSWITCH_END:
 
 LREAD_ERROR:
@@ -254,21 +253,21 @@ LREAD_ERROR:
 ⍝ →PATH - the path of the file.
 ⍝ →PRINT_PATH - whether to print the path along with the output. A scalar 1
 ⍝ means print, 0 means don't.
-⍝ ←IGNORE - magic return value so the function works in defuns.
-∇IGNORE←PRINT_PATH HANDLE_FILE PATH; DESCRIPTOR
+∇PRINT_PATH HANDLE_FILE PATH; FD
   →(~PRINT_PATH) ⍴ LDONT_PRINT_PATH
-    ⍞←PATH,":\n"
+    FIO∆PRINTF "%s:\n" PATH
   LDONT_PRINT_PATH:
 
-  DESCRIPTOR←"r" FIO∆FOPEN PATH
-  →(0<DESCRIPTOR) ⍴ LNO_READ_ERROR
-    ERROR "failed to open file" ◊ →LREAD_ERROR
+  FD←"r" FIO∆OPEN_FILE PATH ◊ →(↑FD) ⍴ LNO_READ_ERROR
+    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Failed to open file '%s': %s" PATH (↑1↓FD)
+    →LEND
   LNO_READ_ERROR:
+  FD←↑1↓FD ◊ FIO∆DEFER "⊣ FIO∆CLOSE_FD FD"
 
   HANDLE_FD DESCRIPTOR
 
-LREAD_ERROR:
-  IGNORE←⍬
+LEND:
+  FIO∆DEFER_END
 ∇
 
 ∇MAIN
@@ -278,14 +277,12 @@ LREAD_ERROR:
   →(1≡≢ARGS∆FILENAMES) ⍴ LREAD_FILE
     ⍝ We only add the filenames when there are multiple fixes to output, to
     ⍝ differentiate them.
-    ⊣ {1 HANDLE_FILE ⍵}¨ ARGS∆FILENAMES
+    1 HANDLE_FILE¨ ARGS∆FILENAMES
     →LSWITCH_END
   LREAD_FILE:  ⊣ 0 HANDLE_FILE ↑ARGS∆FILENAMES ◊ →LSWITCH_END
   LREAD_STDIN: HANDLE_FD FIO∆STDIN             ◊ →LSWITCH_END
   LSWITCH_END:
 ∇
 MAIN
-
-
 
 )OFF
