@@ -73,7 +73,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ∇ARGS∆SET_CODE_GENERATOR_LANGUAGE LANGUAGE
   →("c"≡LANGUAGE) ⍴ LKNOWN_LANGUAGE
     ARGS∆DISPLAY_SHORT_HELP
-    FIO∆STDERR FIO∆FPRINTF⍨ "language '%s' does not support code generation" LANGUAGE
+    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: language '%s' does not support code generation\n" LANGUAGE
     ⍎")OFF 1"
   LKNOWN_LANGUAGE:
 
@@ -87,7 +87,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   →(OPTION≡¨'h' 'v' 'c') / LHELP LVERSION LCODE_GENERATOR
   LDEFAULT:
     ARGS∆DISPLAY_SHORT_HELP
-    FIO∆STDERR FIO∆FPRINTF⍨ "unknown option +'%s'" OPTION
+    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: unknown option +'%s'\n" OPTION
     ⍎")OFF 1"
   LHELP:           ARGS∆DISPLAY_HELP    ◊ ⍎")OFF"        ◊ →LSWITCH_END
   LVERSION:        ARGS∆DISPLAY_VERSION ◊ ⍎")OFF"        ◊ →LSWITCH_END
@@ -116,7 +116,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
     →LSWITCH_END
   LINVALID_LONG_OPTION:
     ARGS∆DISPLAY_SHORT_HELP
-    FIO∆STDERR FIO∆FPRINTF⍨ "unknown option '%s'" ARGUMENT
+    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: unknown option '%s'\n" ARGUMENT
     ⍎")OFF 1"
   LSHORT_OPTION:        ARGS∆PARSE_SHORT_OPTION¨ 1↓ARGUMENT   ◊ →LSWITCH_END
   LDOUBLE_PLUS:         ARGS∆END_OF_OPTIONS←1                 ◊ →LSWITCH_END
@@ -142,7 +142,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍝ Tests for any options with arguments that were not supplied an argument.
   →(~ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE) ⍴ LNO_INVALID_OPTIONS
     ARGS∆DISPLAY_SHORT_HELP
-    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "options '+c' and '++code-generator' expect an argument"
+    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "ERROR: options '+c' and '++code-generator' expect an argument\n"
     ⍎")OFF 1"
   LNO_INVALID_OPTIONS:
 ∇
@@ -239,7 +239,7 @@ HEXDUMP_BYTE_DIGITS←2
   ⍝ If a code generator is selected, we use that, else we just do a hexdump.
   →("c"≡ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LGENERATE_C
     →(0≡≢ARGS∆CODE_GENERATOR_LANGUAGE) ⍴ LNO_SET_LANGUAGE
-      FIO∆STDERR FIO∆FPRINTF⍨ "HANDLE_FILE: unhandled language '%s'" ARGS∆CODE_GENERATOR_LANGUAGE
+      ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: HANDLE_FILE: unhandled language '%s'\n" ARGS∆CODE_GENERATOR_LANGUAGE
       ⍎")OFF 1"
     LNO_SET_LANGUAGE:
     HEXDUMP FD               ◊ →LSWITCH_END
@@ -255,11 +255,11 @@ LREAD_ERROR:
 ⍝ means print, 0 means don't.
 ∇PRINT_PATH HANDLE_FILE PATH; FD
   →(~PRINT_PATH) ⍴ LDONT_PRINT_PATH
-    FIO∆PRINTF "%s:\n" PATH
+    ⊣ FIO∆PRINTF "%s:\n" PATH
   LDONT_PRINT_PATH:
 
   FD←"r" FIO∆OPEN_FILE PATH ◊ →(↑FD) ⍴ LNO_READ_ERROR
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Failed to open file '%s': %s" PATH (↑1↓FD)
+    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: Failed to open file '%s': %s\n" PATH (↑1↓FD)
     →LEND
   LNO_READ_ERROR:
   FD←↑1↓FD ◊ FIO∆DEFER "⊣ FIO∆CLOSE_FD FD"
