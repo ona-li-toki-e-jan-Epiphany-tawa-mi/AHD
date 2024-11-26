@@ -1,5 +1,13 @@
 # Changelog
 
+## Upcoming
+
+- Bug fixes.
+- Removed lambdas due to them being buggy.
+- Updated fio.apl library.
+
+## 0.1.5
+
 - Fixed bug where reading from stdin outputs byte numbers.
 - Fixed value error on reading from stdin.
 - Updated fio.apl library.

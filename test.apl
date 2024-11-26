@@ -18,10 +18,7 @@
 
 ⍝ AHD integration testing script.
 
-
-
 ⊣ ⍎")COPY_ONCE fio.apl"
-⊣ ⍎")COPY_ONCE logging.apl"
 
 
 
@@ -38,6 +35,8 @@ ARGS∆SOURCES_FILENAMES←⍬
 ⍝ The name of the outputs folder.
 ARGS∆OUTPUTS_FOLDER←⍬
 
+⍝ TODO make accept FD.
+⍝ TODO remove need to specify SOURCES and OUTPUTS
 ⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
@@ -70,8 +69,9 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ⍝ 4 for APL and it's arguments.
   ⍝ 3 for user arguments.
   →((3+4)≤≢ARGUMENTS) ⍴ LSUFFICIENT_ARGUMENTS
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: insufficient arguments\n"
     ARGS∆DISPLAY_HELP
-    ⍞←"\n" ◊ PANIC "insufficient arguments"
+    ⍎")OFF 1"
   LSUFFICIENT_ARGUMENTS:
 
   ARGS∆ACTION←↑ARGUMENTS[5]
@@ -79,32 +79,36 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ARGS∆OUTPUTS_FOLDER←↑ARGUMENTS[7]
 
   →((⊂ARGS∆ACTION)∊"record" "test") ⍴ LVALID_ACTION
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: invalid action '%s'\n" ARGS∆ACTION
     ARGS∆DISPLAY_HELP
-    ⍞←"\n" ◊ PANIC "invalid action '",ARGS∆ACTION,"'"
+    ⍎")OFF 1"
   LVALID_ACTION:
 
   ⍝ Checks if sources folder exists and gets filenames.
   ARGS∆SOURCES_FILENAMES←FIO∆LIST_DIRECTORY ARGS∆SOURCES_FOLDER
-  →(¯2≢ARGS∆SOURCES_FILENAMES) ⍴ LSOURCES_FOLDER_EXISTS
-    PANIC "sources folder '",ARGS∆SOURCES_FOLDER,"' does not exist"
+  →(↑ARGS∆SOURCES_FILENAMES) ⍴ LSOURCES_FOLDER_EXISTS
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: unable to read source folder '%s': %s\n" ARGS∆SOURCES_FOLDER (↑1↓ARGS∆SOURCES_FILENAMES)
+    ⍎")OFF 1"
   LSOURCES_FOLDER_EXISTS:
+  ARGS∆SOURCES_FILENAMES←↑1↓ARGS∆SOURCES_FILENAMES
 ∇
 
 
 
 ⍝ Opens, truncates, and writes data to a file.
 ⍝ →FILE_PATH - the file.
-⍝ →BYTE_VECTOR - the data.
-∇BYTE_VECTOR WRITE_FILE FILE_PATH; FILE_DESCRIPTOR
-  ⍞←"Writing to '",FILE_PATH,"'...\n"
+⍝ →BYTES - the data.
+∇BYTES WRITE_FILE FILE_PATH; FD
+  ⊣ FIO∆PRINTF "Writing to '%s'...\n" FILE_PATH
 
-  FILE_DESCRIPTOR←"w" FIO∆FOPEN FILE_PATH
-  →(0<FILE_DESCRIPTOR) ⍴ LSUCCESS
-    PANIC "failed to open file '",FILE_PATH,"' for writing"
+  FD←"w" FIO∆OPEN_FILE FILE_PATH
+  →(↑FD) ⍴ LSUCCESS
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: failed to open file '%s' for writing: %s\n" FILE_PATH (↑1↓FD)
   LSUCCESS:
-  ⊣ BYTE_VECTOR FIO∆FWRITE FILE_DESCRIPTOR
+  FD←↑1↓FD
+  ⊣ FD FIO∆WRITE_FD BYTES
 
-  ⊣ FIO∆FCLOSE FILE_DESCRIPTOR
+  ⊣ FIO∆CLOSE_FD FD
 ∇
 
 ⍝ Performs an individual recording of a file.
@@ -114,7 +118,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
 ∇ARGUMENTS RUN_RECORD FILE_PATHS; SOURCE_FILE;RECORDING_FILE
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
-  ⍞←"Recording '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'...\n"
+  ⊣ FIO∆PRINTF "Record '%s' -> '%s'...\n" SOURCE_FILE OUTPUT_FILE
 
   OUTPUT_FILE WRITE_FILE⍨ RUN_AHD ARGUMENTS,⊂SOURCE_FILE
 ∇
@@ -123,8 +127,8 @@ ARGS∆OUTPUTS_FOLDER←⍬
 ⍝ the results.
 ⍝ →FILENAME - the file in the sources directory to record.
 ∇RECORD FILENAME; SOURCE_FILE;OUTPUT_FILE_BASE
-  SOURCE_FILE←ARGS∆SOURCES_FOLDER FIO∆JOIN_PATHS FILENAME
-  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER FIO∆JOIN_PATHS FILENAME
+  SOURCE_FILE←ARGS∆SOURCES_FOLDER FIO∆JOIN_PATH FILENAME
+  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER FIO∆JOIN_PATH FILENAME
 
   ⍝ Records hexdump.
   ⍬ RUN_RECORD SOURCE_FILE (OUTPUT_FILE_BASE,".hex")
@@ -153,24 +157,25 @@ NEWLINE_BYTE←⎕UCS "\n"
 
   SOURCE_FILE←↑FILE_PATHS[1]
   OUTPUT_FILE←↑FILE_PATHS[2]
-  ⍞←"Testing '",SOURCE_FILE,"' -> '",OUTPUT_FILE,"'...\n"
+  ⊣ FIO∆PRINTF "Testing '%s' -> '%s'...\n" SOURCE_FILE OUTPUT_FILE
 
   ⍝ Reads in what we expect as nested lines.
   EXPECTED_RESULT_LINES←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
-  →(¯2≢EXPECTED_RESULT_LINES) ⍴ LREAD_SUCCESS
-    PANIC "unable to read file '",OUTPUT_FILE,"'"
+  →(↑EXPECTED_RESULT_LINES) ⍴ LREAD_SUCCESS
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: unable to read file '%s': %s\n" OUTPUT_FILE (↑1↓EXPECTED_RESULT_LINES)
+    ⍎")OFF 1"
   LREAD_SUCCESS:
-  EXPECTED_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT EXPECTED_RESULT_LINES
+  EXPECTED_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT ↑1↓EXPECTED_RESULT_LINES
 
   ⍝ Reads in what we got as nested lines.
   ACTUAL_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT RUN_AHD ARGUMENTS,⊂SOURCE_FILE
 
   ⍝ Check if line counts differ.
   →((≢EXPECTED_RESULT_LINES)≡≢ACTUAL_RESULT_LINES) ⍴ LSAME_LINE_COUNT
-    ERROR "line count of output from AHD differs in line count of expected results"
-    ERROR "Got:      ",(⍕≢ACTUAL_RESULT_LINES)," lines"
-    ERROR "Expected: ",(⍕≢EXPECTED_RESULT_LINES)," lines"
-    ERROR "Test failed"
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: line count of output from AHD differs in line count of expected results\n"
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "Got:      %d lines\n" (≢ACTUAL_RESULT_LINES)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "Expected: %d lines\n" (≢EXPECTED_RESULT_LINES)
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "Test failed\n"
     →LFAILED
   LSAME_LINE_COUNT:
 
@@ -183,10 +188,10 @@ NEWLINE_BYTE←⎕UCS "\n"
     ACTUAL_RESULT_LINE←↑ACTUAL_RESULT_LINES[LINE_NUMBER]
 
     →(EXPECTED_RESULT_LINE≡ACTUAL_RESULT_LINE) ⍴ LEQUAL
-      ERROR "Contents of AHD output differs from expected results on line ",⍕LINE_NUMBER
-      ERROR "Got:      '",(FIO∆BYTES_TO_UTF8 ACTUAL_RESULT_LINE),"'"
-      ERROR "Expected: '",(FIO∆BYTES_TO_UTF8 EXPECTED_RESULT_LINE),"'"
-      ERROR "Test failed"
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: Contents of AHD output differs from expected results on line %d\n" LINE_NUMBER
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "Got:      '%s'\n" (FIO∆BYTES_TO_UTF8 ACTUAL_RESULT_LINE)
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "Expected: '%s'\n" (FIO∆BYTES_TO_UTF8 EXPECTED_RESULT_LINE)
+      ⊣ FIO∆STDERR FIO∆PRINT_FD "Test failed\n"
       →LFAILED
     LEQUAL:
 
@@ -206,8 +211,8 @@ LFAILED:
 ⍝ the results to what was previously recorded.
 ⍝ →FILENAME - the file in the sources directory to test.
 ∇TEST FILENAME; SOURCE_FILE;OUTPUT_FILE_BASE
-  SOURCE_FILE←ARGS∆SOURCES_FOLDER FIO∆JOIN_PATHS FILENAME
-  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER FIO∆JOIN_PATHS FILENAME
+  SOURCE_FILE←ARGS∆SOURCES_FOLDER FIO∆JOIN_PATH FILENAME
+  OUTPUT_FILE_BASE←ARGS∆OUTPUTS_FOLDER FIO∆JOIN_PATH FILENAME
 
   ⍝ Tests hexdump.
   ⍬ RUN_TEST SOURCE_FILE (OUTPUT_FILE_BASE,".hex")
@@ -221,39 +226,44 @@ LFAILED:
 ⍝ →ARGUMENTS - a vector of character vectors of the arguments to pass to AHD.
 ⍝ ←The resulting output.
 ∇OUTPUT←RUN_AHD ARGUMENTS; AHD_FD;COMMAND;CURRENT_TIME_MS
-  COMMAND←ARGS∆APL_PATH," --script ahd.apl -- ",↑{⍺," ",⍵}/ FIO∆ESCAPE_SHELL_ARGUMENT¨ ARGUMENTS
-  ⍞←"Running '",COMMAND,"'...\n"
+  COMMAND←ARGUMENTS,⍨ARGS∆APL_PATH "--script" "ahd.apl" "--"
+  ⊣ FIO∆PRINTF "Running '%s'...\n" (↑FIO∆JOIN_SHELL_ARGUMENTS/ COMMAND)
 
-  CURRENT_TIME_MS←FIO∆GET_TIME_OF_DAY 1000
+  CURRENT_TIME_MS←↑1↓FIO∆TIME_MS
 
   AHD_FD←FIO∆POPEN_READ COMMAND
-  →(0≢AHD_FD) ⍴ LSUCCESS
-    PANIC "failed to launch AHD"
+  →(↑AHD_FD) ⍴ LSUCCESS
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: failed to launch AHD: %s\n" (↑1↓AHD_FD)
+    ⍎")OFF 1"
   LSUCCESS:
-  OUTPUT←FIO∆READ_ENTIRE_FD AHD_FD
+  AHD_FD←↑1↓AHD_FD
+  OUTPUT←↑1↓FIO∆READ_ENTIRE_FD AHD_FD
   ⊣ FIO∆PCLOSE AHD_FD
 
-  ⍞←"AHD took " ◊ ⍞←1000÷⍨CURRENT_TIME_MS-⍨ FIO∆GET_TIME_OF_DAY 1000 ◊ ⍞← " seconds\n"
+  ⊣ FIO∆PRINTF "AHD took %.2f seconds\n" (1000÷⍨CURRENT_TIME_MS-⍨↑1↓FIO∆TIME_MS)
 ∇
 
 ∇MAIN
   ARGS∆PARSE_ARGS ⎕ARG
 
-  →({ARGS∆ACTION≡⍵}¨"record" "test") / LRECORD LTEST
-    PANIC "MAIN: unreachable"
+  →((⊂ARGS∆ACTION)⍷"record" "test") / LRECORD LTEST
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: MAIN: unreachable\n"
+    ⍎")OFF 1"
   LRECORD:
-    ⊣ FIO∆MKDIRS ARGS∆OUTPUTS_FOLDER
+    ⍝ TODO check status
+    ⊣ 7 5 5 FIO∆MAKE_DIRECTORIES ARGS∆OUTPUTS_FOLDER
 
     RECORD¨ARGS∆SOURCES_FILENAMES
     ⍞←"Recording complete\n"
     →LSWITCH_END
   LTEST:
-    →(FIO∆IS_DIRECTORY ARGS∆OUTPUTS_FOLDER) ⍴ LOUTPUTS_DIRECTORY_EXISTS
-      PANIC "outputs folder '",ARGS∆OUTPUTS_FOLDER,"' does not exist"
+    →(↑FIO∆LIST_DIRECTORY ARGS∆OUTPUTS_FOLDER) ⍴ LOUTPUTS_DIRECTORY_EXISTS
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: outputs folder '%s' does not exist\n" ARGS∆OUTPUTS_FOLDER
+      ⍎")OFF 1"
     LOUTPUTS_DIRECTORY_EXISTS:
 
     TEST¨ARGS∆SOURCES_FILENAMES
-    ⍞←PASSED_TEST_COUNT ◊ ⍞←"/" ◊ ⍞←TEST_COUNT ◊ ⍞←" tests passed - "
+    ⊣ FIO∆PRINTF "%d/%d tests passed - " PASSED_TEST_COUNT TEST_COUNT
     →(PASSED_TEST_COUNT≡TEST_COUNT) ⍴ LALL_TESTS_PASSED
       ⍞←"FAIL\n" ◊ →LTESTS_FAILED
     LALL_TESTS_PASSED: ⍞←"OK\n"
@@ -262,7 +272,5 @@ LFAILED:
   LSWITCH_END:
 ∇
 MAIN
-
-
 
 )OFF
