@@ -18,8 +18,6 @@
 
 ⍝ AHD integration testing script.
 
-
-
 ⊣ ⍎")COPY_ONCE fio.apl"
 
 
@@ -38,6 +36,7 @@ ARGS∆SOURCES_FILENAMES←⍬
 ARGS∆OUTPUTS_FOLDER←⍬
 
 ⍝ TODO make accept FD.
+⍝ TODO remove need to specify SOURCES and OUTPUTS
 ⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"

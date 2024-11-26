@@ -16,11 +16,11 @@
 ⍝ You should have received a copy of the GNU General Public License along with
 ⍝ AHD. If not, see <https://www.gnu.org/licenses/>.
 
-⍝ AHD - A HexDuper. Hex dump utility.
-
-
+⍝ AHD - A HexDumper. Hex dump utility.
 
 ⊣ ⍎")COPY_ONCE fio.apl"
+
+⍝ TODO make only accept one file.
 
 
 
@@ -41,12 +41,14 @@ ARGS∆CODE_GENERATOR_LANGUAGE←⍬
 ⍝ the repsective option's argument.
 ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 
+⍝ TODO make accept fd.
 ⍝ Displays a short help message.
 ∇ARGS∆DISPLAY_SHORT_HELP
   ⍞←"Try '",ARGS∆PROGRAM_NAME," -- +h' for more information\n"
   ⍞←"Try '",ARGS∆APL_PATH," --script ",ARGS∆PROGRAM_NAME," -- +h' for more information\n"
 ∇
 
+⍝ TODO make accept fd.
 ⍝ Displays help information.
 ∇ARGS∆DISPLAY_HELP
   ⍞←"Usages:\n"
@@ -64,6 +66,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
   ⍞←"    argument. Supported Languages: c\n"
 ∇
 
+⍝ TODO make accept fd.
 ⍝ Displays the version.
 ∇ARGS∆DISPLAY_VERSION
   ⍞←"ahd 0.1.5"
