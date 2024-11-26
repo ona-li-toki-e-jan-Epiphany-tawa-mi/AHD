@@ -1,10 +1,11 @@
 # Changelog
 
-## Upcoming
+## 0.1.6
 
 - Bug fixes.
 - Removed lambdas due to them being buggy.
 - Updated fio.apl library.
+- Simplified logging.
 
 ## 0.1.5
 

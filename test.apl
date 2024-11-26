@@ -20,6 +20,8 @@
 
 ⊣ ⍎")COPY_ONCE fio.apl"
 
+⍝ TODO deduplicate testing and recording tests.
+
 
 
 ⍝ The path to the apl interpreter used to call this program.

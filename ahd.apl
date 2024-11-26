@@ -69,7 +69,7 @@ ARGS∆EXPECT_CODE_GENERATOR_LANGUAGE←0
 ⍝ TODO make accept fd.
 ⍝ Displays the version.
 ∇ARGS∆DISPLAY_VERSION
-  ⍞←"ahd 0.1.5"
+  ⍞←"ahd 0.1.6"
 ∇
 
 ⍝ Enables the code generator and tries to and set it to use the given language.
