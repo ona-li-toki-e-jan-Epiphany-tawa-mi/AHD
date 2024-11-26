@@ -70,7 +70,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ⍝ 4 for APL and it's arguments.
   ⍝ 3 for user arguments.
   →((3+4)≤≢ARGUMENTS) ⍴ LSUFFICIENT_ARGUMENTS
-    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "ERROR: insufficient arguments\n"
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: insufficient arguments\n"
     ARGS∆DISPLAY_HELP
     ⍎")OFF 1"
   LSUFFICIENT_ARGUMENTS:
@@ -80,7 +80,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ARGS∆OUTPUTS_FOLDER←↑ARGUMENTS[7]
 
   →((⊂ARGS∆ACTION)∊"record" "test") ⍴ LVALID_ACTION
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: invalid action '%s'\n" ARGS∆ACTION
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: invalid action '%s'\n" ARGS∆ACTION
     ARGS∆DISPLAY_HELP
     ⍎")OFF 1"
   LVALID_ACTION:
@@ -88,7 +88,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ⍝ Checks if sources folder exists and gets filenames.
   ARGS∆SOURCES_FILENAMES←FIO∆LIST_DIRECTORY ARGS∆SOURCES_FOLDER
   →(↑ARGS∆SOURCES_FILENAMES) ⍴ LSOURCES_FOLDER_EXISTS
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: unable to read source folder '%s': %s\n" ARGS∆SOURCES_FOLDER (↑1↓ARGS∆SOURCES_FILENAMES)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: unable to read source folder '%s': %s\n" ARGS∆SOURCES_FOLDER (↑1↓ARGS∆SOURCES_FILENAMES)
     ⍎")OFF 1"
   LSOURCES_FOLDER_EXISTS:
   ARGS∆SOURCES_FILENAMES←↑1↓ARGS∆SOURCES_FILENAMES
@@ -104,10 +104,10 @@ ARGS∆OUTPUTS_FOLDER←⍬
 
   FD←"w" FIO∆OPEN_FILE FILE_PATH
   →(↑FD) ⍴ LSUCCESS
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: failed to open file '%s' for writing: %s\n" FILE_PATH (↑1↓FD)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: failed to open file '%s' for writing: %s\n" FILE_PATH (↑1↓FD)
   LSUCCESS:
   FD←↑1↓FD
-  ⊣ BYTES FIO∆WRITE_FD FD
+  ⊣ FD FIO∆WRITE_FD BYTES
 
   ⊣ FIO∆CLOSE_FD FD
 ∇
@@ -163,7 +163,7 @@ NEWLINE_BYTE←⎕UCS "\n"
   ⍝ Reads in what we expect as nested lines.
   EXPECTED_RESULT_LINES←FIO∆READ_ENTIRE_FILE OUTPUT_FILE
   →(↑EXPECTED_RESULT_LINES) ⍴ LREAD_SUCCESS
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: unable to read file '%s': %s\n" OUTPUT_FILE (↑1↓EXPECTED_RESULT_LINES)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: unable to read file '%s': %s\n" OUTPUT_FILE (↑1↓EXPECTED_RESULT_LINES)
     ⍎")OFF 1"
   LREAD_SUCCESS:
   EXPECTED_RESULT_LINES←NEWLINE_BYTE FIO∆SPLIT ↑1↓EXPECTED_RESULT_LINES
@@ -173,10 +173,10 @@ NEWLINE_BYTE←⎕UCS "\n"
 
   ⍝ Check if line counts differ.
   →((≢EXPECTED_RESULT_LINES)≡≢ACTUAL_RESULT_LINES) ⍴ LSAME_LINE_COUNT
-    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "ERROR: line count of output from AHD differs in line count of expected results\n"
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Got:      %d lines\n" (≢ACTUAL_RESULT_LINES)
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Expected: %d lines\n" (≢EXPECTED_RESULT_LINES)
-    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "Test failed\n"
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: line count of output from AHD differs in line count of expected results\n"
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "Got:      %d lines\n" (≢ACTUAL_RESULT_LINES)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "Expected: %d lines\n" (≢EXPECTED_RESULT_LINES)
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "Test failed\n"
     →LFAILED
   LSAME_LINE_COUNT:
 
@@ -189,10 +189,10 @@ NEWLINE_BYTE←⎕UCS "\n"
     ACTUAL_RESULT_LINE←↑ACTUAL_RESULT_LINES[LINE_NUMBER]
 
     →(EXPECTED_RESULT_LINE≡ACTUAL_RESULT_LINE) ⍴ LEQUAL
-      ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: Contents of AHD output differs from expected results on line %d\n" LINE_NUMBER
-      ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Got:      '%s'\n" (FIO∆BYTES_TO_UTF8 ACTUAL_RESULT_LINE)
-      ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "Expected: '%s'\n" (FIO∆BYTES_TO_UTF8 EXPECTED_RESULT_LINE)
-      ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "Test failed\n"
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: Contents of AHD output differs from expected results on line %d\n" LINE_NUMBER
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "Got:      '%s'\n" (FIO∆BYTES_TO_UTF8 ACTUAL_RESULT_LINE)
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "Expected: '%s'\n" (FIO∆BYTES_TO_UTF8 EXPECTED_RESULT_LINE)
+      ⊣ FIO∆STDERR FIO∆PRINT_FD "Test failed\n"
       →LFAILED
     LEQUAL:
 
@@ -234,7 +234,7 @@ LFAILED:
 
   AHD_FD←FIO∆POPEN_READ COMMAND
   →(↑AHD_FD) ⍴ LSUCCESS
-    ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: failed to launch AHD: %s\n" (↑1↓AHD_FD)
+    ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: failed to launch AHD: %s\n" (↑1↓AHD_FD)
     ⍎")OFF 1"
   LSUCCESS:
   AHD_FD←↑1↓AHD_FD
@@ -248,7 +248,7 @@ LFAILED:
   ARGS∆PARSE_ARGS ⎕ARG
 
   →((⊂ARGS∆ACTION)⍷"record" "test") / LRECORD LTEST
-    ⊣ FIO∆STDERR FIO∆WRITE_FD⍨ FIO∆UTF8_TO_BYTES "ERROR: MAIN: unreachable\n"
+    ⊣ FIO∆STDERR FIO∆PRINT_FD "ERROR: MAIN: unreachable\n"
     ⍎")OFF 1"
   LRECORD:
     ⍝ TODO check status
@@ -259,7 +259,7 @@ LFAILED:
     →LSWITCH_END
   LTEST:
     →(↑FIO∆LIST_DIRECTORY ARGS∆OUTPUTS_FOLDER) ⍴ LOUTPUTS_DIRECTORY_EXISTS
-      ⊣ FIO∆STDERR FIO∆FPRINTF⍨ "ERROR: outputs folder '%s' does not exist\n" ARGS∆OUTPUTS_FOLDER
+      ⊣ FIO∆STDERR FIO∆PRINTF_FD "ERROR: outputs folder '%s' does not exist\n" ARGS∆OUTPUTS_FOLDER
       ⍎")OFF 1"
     LOUTPUTS_DIRECTORY_EXISTS:
 
