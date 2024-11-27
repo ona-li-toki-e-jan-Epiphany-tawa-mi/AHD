@@ -16,17 +16,17 @@
 ⍝ You should have received a copy of the GNU General Public License along with
 ⍝ fio.apl. If not, see <https://www.gnu.org/licenses/>.
 
-⍝ fio.apl GnuAPL ⎕FIO abstraction library.
+⍝ fio.apl GNU APL ⎕FIO abstraction library.
 ⍝
 ⍝ SYNOPSIS:
 ⍝   TL;DR - ⎕FIO is too low-level IMO for use in APL and this library is my
 ⍝   highly-biased reimagining of it.
 ⍝
-⍝   In GnuAPL, interations with the operating system (file handling, spawning
+⍝   In GNU APL, interations with the operating system (file handling, spawning
 ⍝   processes, opening ports, etc.) are done with ⎕FIO. However, I find that
 ⍝   there are several problems with it.
 ⍝
-⍝   Prior to version GnuAPL 1.9, ⎕FIO functions were specified with an axis
+⍝   Prior to version GNU APL 1.9, ⎕FIO functions were specified with an axis
 ⍝   argument, i.e. ⎕FIO[3] (fopen,) which lead to code that was hard to read.
 ⍝   Now you can specify them by name, i.e. ⎕FIO['fopen'] or ⎕FIO.fopen. This is
 ⍝   the reason I orignally developed this library, but there are still other

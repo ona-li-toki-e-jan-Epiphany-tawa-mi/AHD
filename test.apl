@@ -55,7 +55,7 @@ ARGS∆OUTPUTS_FOLDER←⍬
   ⍞←"  Run AHD on the files in the SOURCES directory compare their output to\n"
   ⍞←"  files created by record in the OUTPUTS directory. If the outputs differ,\n"
   ⍞←"  error message will be printed out on stderr. I couldn't get exit error codes\n"
-  ⍞←"  working right (GnuAPL amirite?,) so some external logic will be required.\n"
+  ⍞←"  working right (GNU APL amirite?,) so some external logic will be required.\n"
   ⍞←"\n"
   ⍞←"Note: this tool will not recurse through directories, so all files must be at\n"
   ⍞←"the top-level of the supplied directories."
