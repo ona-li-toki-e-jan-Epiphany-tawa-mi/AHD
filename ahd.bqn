@@ -24,24 +24,44 @@
 ReadBytes ← @-˜•file.MapBytes
 
 # Splits a list into groups of a specified size. Leftover data that could not
-# fit in will be placed into the last group
+# fit in will be placed into the last group.
 # 𝕩: list.
 # 𝕨: number - size.
 # ←: list of lists.
 GroupEvery ← {𝕩⊔˜⌊𝕨÷˜↕≠𝕩}
 
+# Pairs each element in a list with a number starting at 0 and increasing by n for it's
+# index (i.e. ⟨⟨0,'a'⟩,⟨5,'b'⟩,⟨10,'c'⟩⟩ ← 5 𝕊 "abc").
+# 𝕩: list.
+# 𝕨: number - step.
+# ←: number⋈element list.
+EnumerateBy ← {𝕩⋈¨˜𝕨×↕≠𝕩}
+
 # Converts a number to it's uppercase hexidecimal representation as a string of a
 # specified length, left-padding with zeros.
 # 𝕩: number - to convert.
-# 𝕨:number - length.
+# 𝕨: number - length.
+# ←: string.
 Hexify ← (⥊⟜16)⊸{"0123456789ABCDEF"⊏˜𝕨|⌊÷`⌾⌽𝕨«˜<𝕩}
 
+# Returns whether the given number(s), converted to character(s), represent
+# printable ASCII.
+# 𝕩: number or number list.
+# ←: boolean or boolean list.
+IsDisplayable ← (32⊸≤)∧(126⊸≥)
+
+spaceByte ← ' '-@
+
+bytesPerLine ← 16
+
 Hexdump ← {
-    •Out (7 Hexify ⊑𝕩) ∾ ':' ∾ (∾(' '∾2⊸Hexify)¨1⊑𝕩)
-}¨∘((16⊸×○↕≠)⋈¨⊢)16⊸GroupEvery
+    lineNumberString ← 7 Hexify ⊑𝕩
+    bytesHexString ← ∾⟜(' '⥊˜(3×bytesPerLine)-≠)∾(' '∾2⊸Hexify)¨1⊑𝕩
+    bytesCharacterString ← @+IsDisplayable◶⟨spaceByte,⊢⟩¨1⊑𝕩
+    •Out lineNumberString ∾ ':' ∾ bytesHexString ∾ " |" ∾ bytesCharacterString ∾ "|"
+}¨ bytesPerLine EnumerateBy bytesPerLine⊸GroupEvery
 
 main ← {
     Hexdump ReadBytes "ahd.apl"
-    # •Out 5 Hexify 12427
 }
 main
