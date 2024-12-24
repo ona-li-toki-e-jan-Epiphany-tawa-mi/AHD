@@ -82,7 +82,7 @@ GenerateC ← {
     }¨ bytesPerLine GroupEvery 𝕩
     •Out "}"
 
-    •Out "unsign int data_length = "∾(•Fmt dataLength)∾";"
+    •Out "unsigned int data_length = "∾(•Fmt dataLength)∾";"
 }
 
 ################################################################################
