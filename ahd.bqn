@@ -187,7 +187,7 @@ main ← {
     ParseArguments •args
     0≡file ? Error "No file specified" ;
 
-    # TODO: show better error on nonexisting file.
+    ¬•file.Exists file ? Error "Failed to open '"∾file∾"': no such file or directory" ;
 
     { 0: Hexdump ReadBytes file;
       "c": Error "TODO: add C generator"
