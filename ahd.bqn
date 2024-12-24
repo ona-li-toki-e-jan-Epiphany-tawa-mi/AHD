@@ -18,23 +18,12 @@
 
 # AHD - A HexDumper. Hex dump utility.
 
-################################################################################
-# Hexdump Generator                                                            #
-################################################################################
+# The number of bytes to print per line in the generators.
+bytesPerLine ← 16
 
-# Splits a list into groups of a specified size. Leftover data that could not
-# fit in will be placed into the last group.
-# 𝕩: list.
-# 𝕨: number - size.
-# ←: list of lists.
-GroupEvery ← {𝕩⊔˜⌊𝕨÷˜↕≠𝕩}
-
-# Pairs each element in a list with a number starting at 0 and increasing by n
-# for it's index (i.e. ⟨⟨0,'a'⟩,⟨5,'b'⟩,⟨10,'c'⟩⟩ ← 5 𝕊 "abc").
-# 𝕩: list.
-# 𝕨: number - step.
-# ←: number⋈element list.
-EnumerateBy ← {𝕩⋈¨˜𝕨×↕≠𝕩}
+################################################################################
+# Utilities                                                                    #
+################################################################################
 
 # Converts a number to it's uppercase hexidecimal representation as a string of
 # a specified length, left-padding with zeros.
@@ -43,16 +32,32 @@ EnumerateBy ← {𝕩⋈¨˜𝕨×↕≠𝕩}
 # ←: string.
 Hexify ← (⥊⟜16)⊸{"0123456789ABCDEF"⊏˜𝕨|⌊÷`⌾⌽𝕨«˜<𝕩}
 
+# Splits a list into groups of a specified size. Leftover data that could not
+# fit in will be placed into the last group.
+# 𝕩: list.
+# 𝕨: number - size.
+# ←: list of lists.
+GroupEvery ← {𝕩⊔˜⌊𝕨÷˜↕≠𝕩}
+
+################################################################################
+# Hexdump Generator                                                            #
+################################################################################
+
+# Pairs each element in a list with a number starting at 0 and increasing by n
+# for it's index (i.e. ⟨⟨0,'a'⟩,⟨5,'b'⟩,⟨10,'c'⟩⟩ ← 5 𝕊 "abc").
+# 𝕩: list.
+# 𝕨: number - step.
+# ←: number⋈element list.
+EnumerateBy ← {𝕩⋈¨˜𝕨×↕≠𝕩}
+
 # Returns whether the given number(s), converted to character(s), represent
 # printable ASCII.
 # 𝕩: number or number list.
 # ←: boolean or boolean list.
 IsDisplayable ← (32⊸≤)∧(126⊸≥)
 
-bytesPerLine ← 16
-
 # Prints out a hexdump of the given bytes.
-# 𝕩: number list, where 0≤number≤255 .
+# 𝕩: number list, where 0≤number≤255.
 Hexdump ← {
     lineNumberString ← 7 Hexify ⊑𝕩
     bytesHexString ← ∾⟜(' '⥊˜(3×bytesPerLine)-≠)∾(' '∾2⊸Hexify)¨1⊑𝕩
@@ -60,6 +65,25 @@ Hexdump ← {
 
     •Out lineNumberString ∾ ':' ∾ bytesHexString ∾ " |" ∾ bytesCharacterString ∾ "|"
 }¨ bytesPerLine EnumerateBy bytesPerLine⊸GroupEvery
+
+################################################################################
+# C Code Generator                                                             #
+################################################################################
+
+# Prints out code in C for embedding the given bytes in a program.
+# 𝕩: number list, where 0≤number≤255.
+GenerateC ← {
+    dataLength ← 0
+
+    •Out "unsigned char data[] = {"
+    {
+        dataLength +↩ ≠𝕩
+       •Out "   "∾∾(' '∾','∾˜(2⊸Hexify))¨𝕩
+    }¨ bytesPerLine GroupEvery 𝕩
+    •Out "}"
+
+    •Out "unsign int data_length = "∾(•Fmt dataLength)∾";"
+}
 
 ################################################################################
 # Command Line Interface                                                       #
@@ -81,7 +105,6 @@ help ← Unlines ⟨
     "  --version    display version and exits.",
     "  --license    display license and exits.",
 ⟩
-
 
 version ← "ahd 0.1.6"
 
@@ -110,7 +133,8 @@ license ← Unlines ⟨
     "  https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/AHD/"
 ⟩
 
-# TODO: document.
+# Outputs an error message, some help information, and then exits.
+# 𝕩: string - the error message.
 Error ← {
     •Out "Error: "∾𝕩
     •Out "Try '"∾•name∾" --help' for more information"
@@ -189,7 +213,7 @@ main ← {
 
     ¬•file.Exists file ? Error "Failed to open '"∾file∾"': no such file or directory" ;
 
-    { 0: Hexdump ReadBytes file;
-      "c": Error "TODO: add C generator"
+    { 0: Hexdump ReadBytes file ;
+      "c": GenerateC ReadBytes file
     } codeGeneratorLanguage
 }
