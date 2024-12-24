@@ -117,12 +117,13 @@ Error ← {
     •Exit 1
 }
 
-# TODO: document.
+# File to read from. Set by ParseArguments. 0 means no file.
 file←0
-# TODO: document.
+# Code generator language to use. Set by ParseArguments. 0 means output hexdump.
 codeGeneratorLanguage←0
 
-# TODO: document.
+# Argument parser code generator state.
+# 𝕩: string list - remaining command line arguments.
 ParseCodeGenerator ← {
     []: Error "--code-generator specified without argument" ⋄ •Exit 1 ;
     𝕩: ((1⊸↓){
@@ -131,13 +132,15 @@ ParseCodeGenerator ← {
     }⊑) 𝕩
 }
 
-# TODO: document.
+# Attempts to set the file extracted from command line arguments.
+# 𝕩: string.
 SetFile ← {
     0≢file ? Error "Only one file may be specified but multiple were present" ;
     file ↩ 𝕩
 }
 
-# TODO: document.
+# Argument parser post "--" argument file state.
+# 𝕩: string list - remaining command line arguments.
 ParseAllAsFiles ← {
     []: @ ;
     𝕩: ((1⊸↓){
@@ -146,7 +149,8 @@ ParseAllAsFiles ← {
     }⊑) 𝕩
 }
 
-# TODO: document.
+# Argument parser file state.
+# 𝕩: string list - remaining command line arguments.
 ParseFile ← {
     []: @ ;
     𝕩: ((1⊸↓){
@@ -157,7 +161,9 @@ ParseFile ← {
 }
 
 # TODO: add single character options.
-# TODO: document.
+# Recursively parses a list of command line arguments with a finite state
+# machine.
+# 𝕩: string list - remaining command line arguments.
 ParseArguments ← {
     []: @ ;
     𝕩: ((1⊸↓){
