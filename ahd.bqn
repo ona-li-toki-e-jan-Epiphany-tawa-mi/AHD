@@ -72,10 +72,9 @@ Unlines ← (∾⟜(@+10)⊸∾)´
 
 help ← Unlines ⟨
     "Usage:",
-    "  "∾•name∾" [options...] [FILE]",
+    "  "∾•name∾" [options...] FILE",
     "",
-    "Displays FILE contents (or input from stdin if no FILEs were specified) in",
-    "hexidecimal.",
+    "Displays FILE contents in hexidecimal.",
     "",
     "Options:",
     "  --help       display this help information and exits.",
@@ -111,7 +110,7 @@ license ← Unlines ⟨
     "  https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/AHD/"
 ⟩
 
-Error ← { •Out "Error: "∾𝕩 ⋄ •Exit 1 }
+Error ← •Out "Error: "⊸∾
 
 file←0
 codeGeneratorLanguage←0
@@ -124,9 +123,10 @@ ParseArguments ← {
         𝕨𝕊"--help": •Out help ⋄ •Exit 0 ;
         𝕨𝕊"--version": •Out version ⋄ •Exit 0 ;
         𝕨𝕊"--license": •Out license ⋄ •Exit 0 ;
-        𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "unknown option '"∾𝕩∾"'";
+        𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "unknown option '"∾𝕩∾"'" ⋄ •Exit 1;
               0≡file ? file ↩ 𝕩 ⋄ ParseArguments 𝕨 ;
                        Error "Only one file may be specified but multiple were present"
+                       ⋄ •Exit 1
     } ⊑𝕩
 }
 
@@ -140,7 +140,7 @@ main ← {
 
     # TODO: add C code generator.
 
-    { 0: Error "TODO: read from stdin" ;
+    { 0: Error "No file specified" ⋄ •Out help ⋄ •Exit 1 ;
       𝕩: Hexdump ReadBytes file
     } file
 }
