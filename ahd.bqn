@@ -110,24 +110,66 @@ license ← Unlines ⟨
     "  https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/AHD/"
 ⟩
 
-Error ← •Out "Error: "⊸∾
+# TODO: document.
+Error ← {
+    •Out "Error: "∾𝕩
+    •Out "Try '"∾•name∾" --help' for more information"
+    •Exit 1
+}
 
+# TODO: document.
 file←0
+# TODO: document.
 codeGeneratorLanguage←0
 
+# TODO: document.
+ParseCodeGenerator ← {
+    []: Error "--code-generator specified without argument" ⋄ •Exit 1 ;
+    𝕩: ((1⊸↓){
+        𝕨𝕊"c": codeGeneratorLanguage↩"c" ⋄ ParseArguments 𝕨 ;
+        𝕨𝕊𝕩: Error "Unknown language '"∾𝕩∾"' specified with --code-generator"
+    }⊑) 𝕩
+}
+
+# TODO: document.
+SetFile ← {
+    0≢file ? Error "Only one file may be specified but multiple were present" ;
+    file ↩ 𝕩
+}
+
+# TODO: document.
+ParseAllAsFiles ← {
+    []: @ ;
+    𝕩: ((1⊸↓){
+        𝕨𝕊[]: ParseAllAsFiles 𝕨 ;
+        𝕨𝕊𝕩: SetFile 𝕩 ⋄ ParseAllAsFiles 𝕨
+    }⊑) 𝕩
+}
+
+# TODO: document.
+ParseFile ← {
+    []: @ ;
+    𝕩: ((1⊸↓){
+        𝕨𝕊[]: ParseArguments 𝕨 ;
+        𝕨𝕊"--": ParseAllAsFiles 𝕨 ;
+        𝕨𝕊𝕩: SetFile 𝕩 ⋄ ParseArguments 𝕨
+    }⊑) 𝕩
+}
+
 # TODO: add single character options.
+# TODO: document.
 ParseArguments ← {
-    []: @;
-    𝕩: (1↓𝕩) {
+    []: @ ;
+    𝕩: ((1⊸↓){
         𝕨𝕊[]: ParseArguments 𝕨 ;
         𝕨𝕊"--help": •Out help ⋄ •Exit 0 ;
         𝕨𝕊"--version": •Out version ⋄ •Exit 0 ;
         𝕨𝕊"--license": •Out license ⋄ •Exit 0 ;
-        𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "unknown option '"∾𝕩∾"'" ⋄ •Exit 1;
-              0≡file ? file ↩ 𝕩 ⋄ ParseArguments 𝕨 ;
-                       Error "Only one file may be specified but multiple were present"
-                       ⋄ •Exit 1
-    } ⊑𝕩
+        𝕨𝕊"--code-generator": ParseCodeGenerator 𝕨 ;
+        𝕨𝕊"--": ParseFile 𝕨∾˜<𝕩 ;
+        𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "Unknown option '"∾𝕩∾"'"
+            ; ParseFile 𝕨∾˜<𝕩
+    }⊑) 𝕩
 }
 
 # Returns the contents of a file as bytes.
@@ -137,10 +179,11 @@ ReadBytes ← @-˜•file.MapBytes
 
 main ← {
     ParseArguments •args
+    0≡file ? Error "No file specified" ;
 
-    # TODO: add C code generator.
+    # TODO: show better error on nonexisting file.
 
-    { 0: Error "No file specified" ⋄ •Out help ⋄ •Exit 1 ;
-      𝕩: Hexdump ReadBytes file
-    } file
+    { 0: Hexdump ReadBytes file;
+      "c": Error "TODO: add C generator"
+    } codeGeneratorLanguage
 }
