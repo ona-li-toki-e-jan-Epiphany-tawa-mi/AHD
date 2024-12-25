@@ -1,0 +1,5 @@
+:exitcode 1
+:stdout
+Error: Only one file may be specified but multiple were present
+Try 'ahd.bqn --help' for more information
+:stderr
