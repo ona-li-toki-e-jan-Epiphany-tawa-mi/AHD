@@ -101,9 +101,13 @@ help ← Unlines ⟨
     "Displays FILE contents in hexidecimal.",
     "",
     "Options:",
-    "  --help       display this help information and exits.",
-    "  --version    display version and exits.",
-    "  --license    display license and exits.",
+    "  --help      display this help information and exits.",
+    "  --version   display version and exits.",
+    "  --license   display license and exits.",
+    "",
+    "  --code-generator <langauge>\n"
+    "    Outputs code, instead of a hexdump, to bake the data into a program. Expects a"
+    "    language as an argument. Supported Languages: c"
 ⟩
 
 version ← "ahd 0.1.6"
@@ -184,7 +188,6 @@ ParseFile ← {
     }⊑) 𝕩
 }
 
-# TODO: add single character options.
 # Recursively parses a list of command line arguments with a finite state
 # machine.
 # 𝕩: string list - remaining command line arguments.
