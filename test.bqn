@@ -1,3 +1,5 @@
+#!/usr/bin/env bqn
+
 # This file is part of AHD.
 #
 # Copyright (c) 2024 ona-li-toki-e-jan-Epiphany-tawa-mi
