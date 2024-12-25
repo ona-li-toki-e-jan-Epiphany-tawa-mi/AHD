@@ -105,6 +105,7 @@ _run ← {
     # Positive tests.
     ⟨⟩⊸𝔽¨ sourceFiles
     ⟨"--code-generator","c"⟩⊸𝔽¨ sourceFiles
+    ⟨"--code-generator","bqn"⟩⊸𝔽¨ sourceFiles
 
     # Negative tests.
     ⟨"--code-generator"⟩ 𝔽 "no-language-specified"

@@ -79,11 +79,25 @@ GenerateC ← {
     •Out "unsigned char data[] = {"
     {
         dataLength +↩ ≠𝕩
-       •Out "   "∾∾(" 0x"∾','∾˜(2⊸Hexify))¨𝕩
+        •Out "   "∾∾(" 0x"∾','∾˜2⊸Hexify)¨𝕩
     }¨ cBytesPerLine GroupEvery 𝕩
     •Out "}"
 
     •Out "unsigned int data_length = "∾(•Fmt dataLength)∾";"
+}
+
+################################################################################
+# BQN Code Generator                                                           #
+################################################################################
+
+bqnBytesPerLine ← 14
+
+# Prints out code in BQN for embedding the given bytes in a program.
+# 𝕩: number list, where 0≤number≤255.
+GenerateBQN ← {
+    •Out "data ← ⟨"
+    (•Out∘("   "⊸∾∘∾)((' '⊸∾∾⟜',')•Fmt)¨)¨ bqnBytesPerLine GroupEvery 𝕩
+    •Out "⟩"
 }
 
 ################################################################################
@@ -108,7 +122,7 @@ help ← Unlines ⟨
     "",
     "  --code-generator <langauge>\n"
     "    Outputs code, instead of a hexdump, to bake the data into a program. Expects a"
-    "    language as an argument. Supported Languages: c"
+    "    language as an argument. Supported Languages: c, bqn"
 ⟩
 
 version ← "ahd 0.1.6"
@@ -156,7 +170,8 @@ codeGeneratorLanguage←0
 ParseCodeGenerator ← {
     []: Error "--code-generator specified without argument" ⋄ •Exit 1 ;
     𝕩: ((1⊸↓){
-        𝕨𝕊"c": codeGeneratorLanguage↩"c" ⋄ ParseArguments 𝕨 ;
+        𝕨𝕊"c": codeGeneratorLanguage↩𝕩 ⋄ ParseArguments 𝕨 ;
+        𝕨𝕊"bqn": codeGeneratorLanguage↩𝕩 ⋄ ParseArguments 𝕨 ;
         𝕨𝕊𝕩: Error "Unknown language '"∾𝕩∾"' specified with --code-generator"
     }⊑) 𝕩
 }
@@ -217,6 +232,7 @@ main ← {
     ¬•file.Exists file ? Error "Failed to open '"∾file∾"': no such file or directory" ;
 
     { 0: Hexdump ReadBytes file ;
-      "c": GenerateC ReadBytes file
+      "c": GenerateC ReadBytes file ;
+      "bqn": GenerateBQN ReadBytes file
     } codeGeneratorLanguage
 }
