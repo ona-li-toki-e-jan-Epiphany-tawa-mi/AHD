@@ -96,7 +96,7 @@ bqnBytesPerLine ← 14
 # 𝕩: number list, where 0≤number≤255.
 GenerateBQN ← {
     •Out "data ← ⟨"
-    (•Out∘("   "⊸∾∘∾)((' '⊸∾∾⟜',')•Fmt)¨)¨ bqnBytesPerLine GroupEvery 𝕩
+    (•Out∘("   "⊸∾∾)((' '⊸∾∾⟜',')•Fmt)¨)¨ bqnBytesPerLine GroupEvery 𝕩
     •Out "⟩"
 }
 
@@ -120,9 +120,9 @@ help ← Unlines ⟨
     "  --version   display version and exits.",
     "  --license   display license and exits.",
     "",
-    "  --code-generator <langauge>\n"
-    "    Outputs code, instead of a hexdump, to bake the data into a program. Expects a"
-    "    language as an argument. Supported Languages: c, bqn"
+    "  --code-generator <langauge>"
+    "    Outputs code, instead of a hexdump, to bake the data into a program. Supported"
+    "    Languages: c, bqn."
 ⟩
 
 version ← "ahd 0.1.6"
@@ -144,7 +144,7 @@ license ← Unlines ⟨
     "with this program. If not, see http://www.gnu.org/licenses/.",
     "",
     "Source (paltepuk):",
-    "  https://http://paltepuk.xyz/cgit/AHD.git/about/",
+    "  https://paltepuk.xyz/cgit/AHD.git/about/",
     "  http://oytjumugnwsf4g72vemtamo72vfvgmp4lfsf6wmggcvba3qmcsta.b32.i2p/cgit/AHD.git/about/",
     "  http://4blcq4arxhbkc77tfrtmy4pptf55gjbhlj32rbfyskl672v2plsmjcyd.onion/cgit/AHD.git/about/",
     "",
