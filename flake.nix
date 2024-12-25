@@ -29,7 +29,7 @@
       devShells = forAllSystems ({ pkgs }: {
         default = with pkgs; mkShell {
           packages = [
-            gnuapl
+            cbqn
           ];
         };
       });

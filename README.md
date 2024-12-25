@@ -6,7 +6,7 @@ A simple hexdump utility I wrote. That's it.
 
 Dependencies:
 
-- GNU APL: ([https://www.gnu.org/software/apl](https://www.gnu.org/software/apl))
+- CBQN - [https://github.com/dzaima/CBQN](https://github.com/dzaima/CBQN)
 
 There is a `flake.nix` you can use with `nix develop` to generate a development
 enviroment.
@@ -14,8 +14,8 @@ enviroment.
 Then, run one of the following commands to get started:
 
 ```sh
-./ahd.apl -- +h
-apl --script ahd.apl -- +h
+./ahd.bqn -h
+bqn -h
 ```
 
 ## How to run tests
@@ -25,16 +25,16 @@ Get the dependencies as specified in the `How to run` section.
 Then, run one of the following commands:
 
 ```sh
-./test.apl -- test tests/sources tests/outputs
-apl --script test.apl -- test tests/sources tests/outputs
+./test.bqn
+bqn test.bqn
 ```
 
 If breaking changes are desired, regenerate the test cases with one of the
 following commands:
 
 ```sh
-./test.apl -- record tests/sources tests/outputs
-apl --script test.apl -- record tests/sources tests/outputs
+./test.bqn record
+bqn test.bqn record
 ```
 
 ## How to install
