@@ -76,7 +76,6 @@ Record ← {
     outputFile •file.Chars report
 }
 
-testFailed ← 0
 # TODO: make print offending line.
 # Runs AHD on the given source file with the given arguments and compares it
 # against the previously recorded result from the output directory.

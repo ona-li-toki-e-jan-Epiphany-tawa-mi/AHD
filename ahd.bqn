@@ -18,9 +18,6 @@
 
 # AHD - A HexDumper. Hex dump utility.
 
-# The number of bytes to print per line in the generators.
-bytesPerLine ← 16
-
 ################################################################################
 # Utilities                                                                    #
 ################################################################################
@@ -43,6 +40,8 @@ GroupEvery ← {𝕩⊔˜⌊𝕨÷˜↕≠𝕩}
 # Hexdump Generator                                                            #
 ################################################################################
 
+hexdumpBytesPerLine ← 16
+
 # Pairs each element in a list with a number starting at 0 and increasing by n
 # for it's index (i.e. ⟨⟨0,'a'⟩,⟨5,'b'⟩,⟨10,'c'⟩⟩ ← 5 𝕊 "abc").
 # 𝕩: list.
@@ -60,15 +59,17 @@ IsDisplayable ← (32⊸≤)∧(126⊸≥)
 # 𝕩: number list, where 0≤number≤255.
 Hexdump ← {
     lineNumberString ← 7 Hexify ⊑𝕩
-    bytesHexString ← ∾⟜(' '⥊˜(3×bytesPerLine)-≠)∾(' '∾2⊸Hexify)¨1⊑𝕩
+    bytesHexString ← ∾⟜(' '⥊˜(3×hexdumpBytesPerLine)-≠)∾(' '∾2⊸Hexify)¨1⊑𝕩
     bytesCharacterString ← @+IsDisplayable◶⟨' '-@,⊢⟩¨1⊑𝕩
 
     •Out lineNumberString ∾ ':' ∾ bytesHexString ∾ " |" ∾ bytesCharacterString ∾ "|"
-}¨ bytesPerLine EnumerateBy bytesPerLine⊸GroupEvery
+}¨ hexdumpBytesPerLine EnumerateBy hexdumpBytesPerLine⊸GroupEvery
 
 ################################################################################
 # C Code Generator                                                             #
 ################################################################################
+
+cBytesPerLine ← 12
 
 # Prints out code in C for embedding the given bytes in a program.
 # 𝕩: number list, where 0≤number≤255.
@@ -78,8 +79,8 @@ GenerateC ← {
     •Out "unsigned char data[] = {"
     {
         dataLength +↩ ≠𝕩
-       •Out "   "∾∾(' '∾','∾˜(2⊸Hexify))¨𝕩
-    }¨ bytesPerLine GroupEvery 𝕩
+       •Out "   "∾∾(" 0x"∾','∾˜(2⊸Hexify))¨𝕩
+    }¨ cBytesPerLine GroupEvery 𝕩
     •Out "}"
 
     •Out "unsigned int data_length = "∾(•Fmt dataLength)∾";"
