@@ -184,7 +184,6 @@ ParseFile ← {
     []: @ ;
     𝕩: ((1⊸↓){
         𝕨𝕊[]: ParseArguments 𝕨 ;
-        𝕨𝕊"--": ParseAllAsFiles 𝕨 ;
         𝕨𝕊𝕩: SetFile 𝕩 ⋄ ParseArguments 𝕨
     }⊑) 𝕩
 }
@@ -200,7 +199,7 @@ ParseArguments ← {
         𝕨𝕊"--version": •Out version ⋄ •Exit 0 ;
         𝕨𝕊"--license": •Out license ⋄ •Exit 0 ;
         𝕨𝕊"--code-generator": ParseCodeGenerator 𝕨 ;
-        𝕨𝕊"--": ParseFile 𝕨∾˜<𝕩 ;
+        𝕨𝕊"--": ParseAllAsFiles 𝕨 ;
         𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "Unknown option '"∾𝕩∾"'"
             ; ParseFile 𝕨∾˜<𝕩
     }⊑) 𝕩
