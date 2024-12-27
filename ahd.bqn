@@ -105,7 +105,7 @@ GenerateBQN ← {
 ################################################################################
 
 help ← "Usage:
-  "∾•name∾" [options...] [FILE]
+  "∾•name∾" [hvl] [-c language] [--] [FILE]
 
 Displays FILE contents in hexidecimal.
 
