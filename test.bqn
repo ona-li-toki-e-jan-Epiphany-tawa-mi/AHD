@@ -105,12 +105,16 @@ _run ← {
     ⟨⟩⊸𝔽¨ sourceFiles
     ⟨"--code-generator","c"⟩⊸𝔽¨ sourceFiles
     ⟨"--code-generator","bqn"⟩⊸𝔽¨ sourceFiles
+    ⟨"-cc"⟩⊸𝔽¨ sourceFiles
+    ⟨"-c","c"⟩⊸𝔽¨ sourceFiles
 
     # Negative tests.
     ⟨"--code-generator"⟩ 𝔽 "no-language-specified"
     ⟨"--code-generator","unsupported"⟩ 𝔽 "unsupported-language"
     ⟨⟩ 𝔽 "nonexistant-file"
     ⟨"file2"⟩ 𝔽 "duplicate-files"
+    ⟨"--unknown"⟩ 𝔽 "unknown-long-option"
+    ⟨"-"⟩ 𝔽 "empty-short-option"
 }
 
 main ← {
