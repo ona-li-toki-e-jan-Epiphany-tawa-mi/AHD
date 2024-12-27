@@ -19,7 +19,7 @@
 # AHD integration testing script.
 #
 # Run './test.bqn' to run tests.
-# Run './test.bqn' to regenerate tests.
+# Run './test.bqn record' to regenerate tests.
 
 newline ← @+10
 
