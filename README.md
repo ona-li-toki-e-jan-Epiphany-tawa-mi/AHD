@@ -45,10 +45,3 @@ with the following attribute:
 ```nix
 nur.repos.ona-li-toki-e-jan-Epiphany-tawa-mi.ahd
 ```
-
-## Release notes
-
-- Bug fixes.
-- Removed lambdas due to them being buggy.
-- Updated fio.apl library.
-- Simplified logging.

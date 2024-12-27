@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## 1.0.0
 
 - Rewrote in BQN for funsies (it's also much simpler and WAYYYY faster.)
 - Switched to only allowing one file to be supplied via CLI for simplicity.

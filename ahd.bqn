@@ -120,7 +120,7 @@ Options:
     Outputs code, instead of a hexdump, to bake the data into a program.
     Supported Languages: c, bqn"
 
-version ← "ahd 0.1.6"
+version ← "ahd 1.0.0"
 
 license ← "Copyright (C) 2024 ona-li-toki-e-jan-Epiphany-tawa-mi.
 
