@@ -56,10 +56,10 @@ GenerateReport ← {
 OutputFile ← {
     path ← outputDirectory •file.At 𝕩
 
-    𝕨 { 0≢≠𝕨 ?
-        ".out"∾˜𝕩∾"."∾(∾⟜"_"⊸∾)´𝕨 ;
-        𝕩∾".out"
-    } path
+    { 0≢≠𝕩 ?
+        ".out"∾˜path∾"."∾(∾⟜"_"⊸∾)´𝕩 ;
+        path∾".out"
+    } 𝕨
 }
 
 # Runs AHD on the given source file with the given arguments and records the
@@ -87,13 +87,13 @@ Test ← {
     report ← GenerateReport RunAHD 𝕨∾<sourceFile
     previousReport ← •file.Chars outputFile
 
-    outputFile { ≡´𝕩 ?
+    { report≡previousReport ?
         •Out "Test passed" ;
-        •Out "Test failed: output differs from previously recorded output in '"∾𝕨∾"'"
+        •Out "Test failed: output differs from previously recorded output in '"∾outputFile∾"'"
         •Out "Actual output:"
-        •Out ⊑𝕩
+        •Out ⊑report
         •Exit 1
-    } report‿previousReport
+    }
 }
 
 # To be used on Record or Test. Specifies the inputs to be recorded/tested.
