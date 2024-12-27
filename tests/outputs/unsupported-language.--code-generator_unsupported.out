@@ -1,0 +1,5 @@
+:exitcode 1
+:stdout
+Error: Unknown language 'unsupported' specified with --code-generator
+Try 'ahd.bqn --help' for more information
+:stderr

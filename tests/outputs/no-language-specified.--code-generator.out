@@ -1,0 +1,5 @@
+:exitcode 1
+:stdout
+Error: Unknown language 'tests/sources/no-language-specified' specified with --code-generator
+Try 'ahd.bqn --help' for more information
+:stderr
