@@ -37,14 +37,14 @@ RunAHD ← {
 
 # Generates a report from the output of AHD that can be used for comparison in
 # tests.
-# 𝕩: number‿string‿strin - exitCode‿stdout‿stderr from AHD.
+# 𝕩: number‿string‿string - exitCode‿stdout‿stderr from AHD.
 # ←: string.
 GenerateReport ← {
     exitCode‿stdout‿stderr ← 𝕩
 
-    report←":exitcode "∾(•Fmt exitCode)∾newline
-    report↩report∾":stdout"∾newline∾stdout
-    report↩report∾":stderr"∾newline∾stderr
+    report ← ":exitcode "∾(•Fmt exitCode)∾newline
+    report ∾↩ ":stdout"∾newline∾stdout
+    report ∾↩ ":stderr"∾newline∾stderr
     report
 }
 
