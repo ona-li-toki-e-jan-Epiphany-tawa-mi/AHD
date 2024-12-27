@@ -15,7 +15,7 @@ Then, run one of the following commands to get started:
 
 ```sh
 ./ahd.bqn -h
-bqn -h
+bqn ahd.bqn -h
 ```
 
 ## How to run tests
