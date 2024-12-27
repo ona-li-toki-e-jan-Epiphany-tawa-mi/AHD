@@ -104,53 +104,43 @@ GenerateBQN ← {
 # Command Line Interface                                                       #
 ################################################################################
 
-# Joins a string list into a string with newlines in-between.
-# 𝕩: string list.
-# ←: string.
-Unlines ← (∾⟜(@+10)⊸∾)´
+help ← "Usage:
+  "∾•name∾" [options...] FILE
 
-help ← Unlines ⟨
-    "Usage:",
-    "  "∾•name∾" [options...] FILE",
-    "",
-    "Displays FILE contents in hexidecimal.",
-    "",
-    "Options:",
-    "  --help      display this help information and exits.",
-    "  --version   display version and exits.",
-    "  --license   display license and exits.",
-    "",
-    "  --code-generator <langauge>"
-    "    Outputs code, instead of a hexdump, to bake the data into a program. Supported"
-    "    Languages: c, bqn."
-⟩
+Displays FILE contents in hexidecimal.
+
+Options:
+  --help      display this help information and exits.
+  --version   display version and exits.
+  --license   display license and exits.
+
+  --code-generator <langauge>
+    Outputs code, instead of a hexdump, to bake the data into a program.
+    Supported Languages: c, bqn"
 
 version ← "ahd 0.1.6"
 
-license ← Unlines ⟨
-    "Copyright (C) 2024 ona-li-toki-e-jan-Epiphany-tawa-mi.",
-    "",
-    "This program is free software: you can redistribute it and/or modify it",
-    "under the terms of the GNU General Public License as published by the Free",
-    "Software Foundation, either version 3 of the License, or (at your option)",
-    "any later version.",
-    "",
-    "This program is distributed in the hope that it will be useful, but WITHOUT",
-    "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or",
-    "FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for",
-    "more details.",
-    "",
-    "You should have received a copy of the GNU General Public License along",
-    "with this program. If not, see http://www.gnu.org/licenses/.",
-    "",
-    "Source (paltepuk):",
-    "  https://paltepuk.xyz/cgit/AHD.git/about/",
-    "  http://oytjumugnwsf4g72vemtamo72vfvgmp4lfsf6wmggcvba3qmcsta.b32.i2p/cgit/AHD.git/about/",
-    "  http://4blcq4arxhbkc77tfrtmy4pptf55gjbhlj32rbfyskl672v2plsmjcyd.onion/cgit/AHD.git/about/",
-    "",
-    "Source (GitHub):",
-    "  https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/AHD/"
-⟩
+license ← "Copyright (C) 2024 ona-li-toki-e-jan-Epiphany-tawa-mi.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see http://www.gnu.org/licenses/.
+
+Source (paltepuk):
+  https://paltepuk.xyz/cgit/AHD.git/about/
+  http://oytjumugnwsf4g72vemtamo72vfvgmp4lfsf6wmggcvba3qmcsta.b32.i2p/cgit/AHD.git/about/
+  http://4blcq4arxhbkc77tfrtmy4pptf55gjbhlj32rbfyskl672v2plsmjcyd.onion/cgit/AHD.git/about/
+
+Source (GitHub):,
+  https://github.com/ona-li-toki-e-jan-Epiphany-tawa-mi/AHD/"
 
 # Outputs an error message, some help information, and then exits.
 # 𝕩: string - the error message.
