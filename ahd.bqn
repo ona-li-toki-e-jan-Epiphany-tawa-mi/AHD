@@ -110,11 +110,11 @@ help ← "Usage:
 Displays FILE contents in hexidecimal.
 
 Options:
-  --help      display this help information and exits.
-  --version   display version and exits.
-  --license   display license and exits.
+  -h, --help      display this help information and exits.
+  -v, --version   display version and exits.
+  -l, --license   display license and exits.
 
-  --code-generator <langauge>
+  -c, --code-generator <langauge>
     Outputs code, instead of a hexdump, to bake the data into a program.
     Supported Languages: c, bqn"
 
@@ -162,7 +162,7 @@ ParseCodeGenerator ← {
     𝕩: ((1⊸↓){
         𝕨𝕊"c": codeGeneratorLanguage↩𝕩 ⋄ ParseArguments 𝕨 ;
         𝕨𝕊"bqn": codeGeneratorLanguage↩𝕩 ⋄ ParseArguments 𝕨 ;
-        𝕨𝕊𝕩: Error "Unknown language '"∾𝕩∾"' specified with --code-generator"
+        ·𝕊𝕩: Error "Unknown language '"∾𝕩∾"' specified with --code-generator"
     }⊑) 𝕩
 }
 
@@ -177,7 +177,7 @@ SetFile ← {
 # 𝕩: string list - remaining command line arguments.
 ParseAllAsFiles ← {
     []: @ ;
-    𝕩: ((1⊸↓){
+    𝕩: (1⊸↓{
         𝕨𝕊[]: ParseAllAsFiles 𝕨 ;
         𝕨𝕊𝕩: SetFile 𝕩 ⋄ ParseAllAsFiles 𝕨
     }⊑) 𝕩
@@ -187,10 +187,24 @@ ParseAllAsFiles ← {
 # 𝕩: string list - remaining command line arguments.
 ParseFile ← {
     []: @ ;
-    𝕩: ((1⊸↓){
+    𝕩: (1⊸↓{
         𝕨𝕊[]: ParseArguments 𝕨 ;
         𝕨𝕊𝕩: SetFile 𝕩 ⋄ ParseArguments 𝕨
     }⊑) 𝕩
+}
+
+# Argument parser short options state.
+# 𝕩: string - short options without leading '-'.
+# 𝕨: string list - remaining command line arguments.
+ParseShortOptions ← {
+    ·𝕊[]: Error "Unknown option '-'" ;
+    𝕨𝕊𝕩: 𝕨 {
+        ·𝕊'h'‿·: •Out help ⋄ •Exit 0 ;
+        ·𝕊'v'‿·: •Out version ⋄ •Exit 0 ;
+        ·𝕊'l'‿·: •Out license ⋄ •Exit 0 ;
+        𝕨𝕊'c'‿[]: ParseCodeGenerator 𝕨;
+        𝕨𝕊'c'‿rest: ParseCodeGenerator 𝕨∾˜<rest
+    } (⊑⋈1⊸↓) 𝕩
 }
 
 # Recursively parses a list of command line arguments with a finite state
@@ -198,14 +212,15 @@ ParseFile ← {
 # 𝕩: string list - remaining command line arguments.
 ParseArguments ← {
     []: @ ;
-    𝕩: ((1⊸↓){
-        𝕨𝕊[]: ParseArguments 𝕨 ;
-        𝕨𝕊"--help": •Out help ⋄ •Exit 0 ;
-        𝕨𝕊"--version": •Out version ⋄ •Exit 0 ;
-        𝕨𝕊"--license": •Out license ⋄ •Exit 0 ;
+    𝕩: (1⊸↓{
+        ·𝕊[]: ParseArguments 𝕨 ;
+        ·𝕊"--help": •Out help ⋄ •Exit 0 ;
+        ·𝕊"--version": •Out version ⋄ •Exit 0 ;
+        ·𝕊"--license": •Out license ⋄ •Exit 0 ;
         𝕨𝕊"--code-generator": ParseCodeGenerator 𝕨 ;
         𝕨𝕊"--": ParseAllAsFiles 𝕨 ;
-        𝕨𝕊𝕩: '-'≡⊑𝕩 ? Error "Unknown option '"∾𝕩∾"'"
+        𝕨𝕊𝕩: "--"≡2↑𝕩 ? Error "Unknown option '"∾𝕩∾"'"
+            ; '-'≡⊑𝕩 ? 𝕨 ParseShortOptions 1↓𝕩
             ; ParseFile 𝕨∾˜<𝕩
     }⊑) 𝕩
 }
