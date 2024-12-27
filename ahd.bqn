@@ -105,9 +105,11 @@ GenerateBQN ← {
 ################################################################################
 
 help ← "Usage:
-  "∾•name∾" [options...] FILE
+  "∾•name∾" [options...] [FILE]
 
 Displays FILE contents in hexidecimal.
+
+If FILE is not specified, reads input from stdin.
 
 Options:
   -h, --help      display this help information and exits.
@@ -149,11 +151,6 @@ Error ← {
     •Out "Try '"∾•name∾" --help' for more information"
     •Exit 1
 }
-
-# File to read from. Set by ParseArguments. 0 means no file.
-file←0
-# Code generator language to use. Set by ParseArguments. 0 means output hexdump.
-codeGeneratorLanguage←0
 
 # Argument parser code generator state.
 # 𝕩: string list - remaining command line arguments.
@@ -197,7 +194,7 @@ ParseFile ← {
 # 𝕩: string - short options without leading '-'.
 # 𝕨: string list - remaining command line arguments.
 ParseShortOptions ← {
-    ·𝕊[]: Error "Unknown option '-'" ;
+    ·𝕊[]: Error "ParseShortOptions: unreachable";
     𝕨𝕊𝕩: 𝕨 {
         ·𝕊'h'‿·: •Out help ⋄ •Exit 0 ;
         ·𝕊'v'‿·: •Out version ⋄ •Exit 0 ;
@@ -219,6 +216,7 @@ ParseArguments ← {
         ·𝕊"--license": •Out license ⋄ •Exit 0 ;
         𝕨𝕊"--code-generator": ParseCodeGenerator 𝕨 ;
         𝕨𝕊"--": ParseAllAsFiles 𝕨 ;
+        𝕨𝕊"-": ParseFile 𝕨∾˜<𝕩 ;
         𝕨𝕊𝕩: "--"≡2↑𝕩 ? Error "Unknown option '"∾𝕩∾"'"
             ; '-'≡⊑𝕩 ? 𝕨 ParseShortOptions 1↓𝕩
             ; ParseFile 𝕨∾˜<𝕩
@@ -228,16 +226,36 @@ ParseArguments ← {
 # Returns the contents of a file as bytes.
 # 𝕩: string - file name.
 # ←: number list.
-ReadBytes ← @-˜•file.MapBytes
+ReadFileBytes ← @-˜•file.MapBytes
+
+# Returns the contents of stdin as bytes. Blocks until EOF is reached.
+# 𝕩: any - dummy value to make this a function.
+# ←: number list.
+ReadStdinBytes ← { 𝕩:
+    # Cursed, but •term.CharB reads only one character at a time and I couldn't
+    # find a better way to read from stdin.
+    result ← ⟨⟩
+    @•_while_{𝕩: result ∾↩ •term.CharB @ ⋄ 0≢¯1⊑result}@
+    # Converts to bytes, dropping the 0 from •term.CharB.
+    @-˜¯1↓result
+}
+
+# File to read from. Set by ParseArguments. 0 means no file.
+file←0
+# Code generator language to use. Set by ParseArguments. 0 means output hexdump.
+codeGeneratorLanguage←0
 
 main ← {
     ParseArguments •args
-    0≡file ? Error "No file specified" ;
 
-    ¬•file.Exists file ? Error "Failed to open '"∾file∾"': no such file or directory" ;
+    data ← ⟨⟩
+    { 0≡file ? data ↩ ReadStdinBytes @
+    ; •file.Exists file ? data ↩ ReadFileBytes file
+    ; Error "Failed to open '"∾file∾"': no such file or directory"
+    }
 
-    { 0: Hexdump ReadBytes file ;
-      "c": GenerateC ReadBytes file ;
-      "bqn": GenerateBQN ReadBytes file
+    { 0: Hexdump data ;
+      "c": GenerateC data ;
+      "bqn": GenerateBQN data
     } codeGeneratorLanguage
 }

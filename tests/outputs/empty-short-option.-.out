@@ -1,5 +1,0 @@
-:exitcode 1
-:stdout
-Error: Unknown option '-'
-Try 'ahd.bqn --help' for more information
-:stderr

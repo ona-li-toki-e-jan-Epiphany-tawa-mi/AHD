@@ -114,7 +114,6 @@ _run ← {
     ⟨⟩ 𝔽 "nonexistant-file"
     ⟨"file2"⟩ 𝔽 "duplicate-files"
     ⟨"--unknown"⟩ 𝔽 "unknown-long-option"
-    ⟨"-"⟩ 𝔽 "empty-short-option"
 }
 
 main ← {
