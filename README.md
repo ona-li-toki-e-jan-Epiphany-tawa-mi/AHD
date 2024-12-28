@@ -11,30 +11,27 @@ Dependencies:
 There is a `flake.nix` you can use with `nix develop` to generate a development
 enviroment.
 
-Then, run one of the following commands to get started:
+Then, run the following command(s) to get started:
 
 ```sh
 ./ahd.bqn -h
-bqn ahd.bqn -h
 ```
 
 ## How to run tests
 
 Get the dependencies as specified in the `How to run` section.
 
-Then, run one of the following commands:
+Then, run the following command(s):
 
 ```sh
 ./test.bqn
-bqn test.bqn
 ```
 
-If breaking changes are desired, regenerate the test cases with one of the
-following commands:
+If breaking changes are desired, regenerate the test cases with the following
+command(s):
 
 ```sh
 ./test.bqn record
-bqn test.bqn record
 ```
 
 ## How to install
